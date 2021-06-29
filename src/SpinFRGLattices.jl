@@ -1,9 +1,13 @@
 module SpinFRGLattices
+
 using LaTeXStrings,Parameters,StaticArrays,Plots,Test
+version() = "0.2.0"
 
 include("GeometryEssentials.jl")
-include("LatticeHelpers.jl")
+
 include("Polymers.jl")
 include("Fourier.jl")
+include("LatticeHelpers.jl")
+include("Lattices/Lattices.jl")
 
 end # module
