@@ -1,7 +1,7 @@
 name = "SpinFRGLattices"
 uuid = "053fb7f8-31b7-4f68-aef8-4452b415dd8c"
 authors = ["Nils Niggemann <nils.niggemann@physik.fu-berlin.de>"]
-version = "0.2.0"
+version = "0.2.1"
 
 [deps]
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"

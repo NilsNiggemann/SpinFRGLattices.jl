@@ -1,3 +1,6 @@
+module Fourier
+using ..SpinFRGLattices,LaTeXStrings,Parameters,StaticArrays,Plots,Test
+export LatticeInfo,FourierTransform,Fourier2D,pitick,PiMultipleTicks,Chikplot,getFlow,plotFlow,plotMaxFlow,pointPath,fetchKPath,plotKpath,pscatter!,pplot!
 @with_kw struct LatticeInfo{BasisType,RvecType,FunctionType}
     System::Geometry
     Basis::BasisType
@@ -124,3 +127,5 @@ end
 pscatter!(pArray;kwargs...) = scatter!(Tuple([p[i] for p in pArray] for i in 1:length(pArray[1]));kwargs...)
 pscatter(pArray;kwargs...) = scatter(Tuple([p[i] for p in pArray] for i in 1:length(pArray[1]));kwargs...)
 pplot!(pArray;kwargs...) = plot!(Tuple(p for p in pArray);kwargs...)
+
+end # module
