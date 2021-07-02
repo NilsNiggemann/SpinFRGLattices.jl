@@ -1,3 +1,5 @@
+using LaTeXStrings,Parameters,Plots
+
 @with_kw struct LatticeInfo{BasisType,RvecType,FunctionType}
     System::Geometry
     Basis::BasisType
@@ -46,6 +48,47 @@ function Fourier2D(Chi_R::AbstractArray,regionfunc::Function,Lattice;res=100,ext
     end
     return karray,Chi_k
 end
+##
+
+"""Compute energy divided by temperature from spin correlations"""
+function EnergyBeta(Chi_RNu, Lattice)
+    @unpack PairList,SiteList,PairTypes,Basis,UnitCell,pairToInequiv,Npairs = Lattice
+    J_ij = Lattice.System.couplings
+    E = 0.
+    Chi_Tau0 = zeros(Npairs) 
+    N_nu = size(Chi_RNu,2) 
+    for R in eachindex(Chi_Tau0)
+        sum = 0.
+        for n in 1:N_nu
+            sum += Chi_RNu[R,n]
+        end
+        Chi_Tau0[R] = Chi_RNu[R,begin] +2*sum# Chi(nu=0)
+    end
+
+    for i_site in UnitCell
+        # println(Ri)
+        for j_site in SiteList # site summation
+            R_Ref,ij = pairToInequiv(i_site,j_site) #Map j to correct pair so that we may use Chi_0,j'
+            xi = getSiteType(R_Ref,Basis)
+            pair = MapToPair(xi,ij,PairList,PairTypes)
+            if pair !== 0
+                E += 3/(2*Basis.NCell) *J_ij[pair] * Chi_Tau0[pair]
+            end
+            # println(j_site,Chi_R[pair])
+        end
+    end
+    return E
+end
+
+function get_e_Chi(Chi_Rnu,Lattice)
+    e_Chi = similar(Results.T)
+    for (iT,T) in enumerate(Results.T_points)
+        e_Chi[iT] = T*EnergyBeta(Chi_Rnu,Lattice)
+    end
+    return e_Chi
+end
+
+
 ##
 pitick(x) = latexstring("$(round(Int,x/pi)) \\pi") 
 PiMultipleTicks(ticks) = [pitick(x) for x in ticks  ]
