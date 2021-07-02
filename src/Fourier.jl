@@ -1,5 +1,3 @@
-using LaTeXStrings,Parameters,Plots
-
 @with_kw struct LatticeInfo{BasisType,RvecType,FunctionType}
     System::Geometry
     Basis::BasisType
