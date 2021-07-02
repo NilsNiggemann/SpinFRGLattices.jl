@@ -8,8 +8,8 @@ using LaTeXStrings,Parameters,Plots
     NUnique::Int = System.NUnique
     PairList::Vector{RvecType} = System.PairList
     PairTypes::Vector{sitePair} = System.PairTypes
-    SiteList::Vector{RvecType} = unique(LatticeHelpers.sortedPairList(NLen,Basis)[1])
-    UnitCell::Vector{RvecType} = [LatticeHelpers.getRvec(b,Basis) for b in Basis.b]
+    SiteList::Vector{RvecType} = unique(SpinFRGLattices.sortedPairList(NLen,Basis)[1])
+    UnitCell::Vector{RvecType} = [SpinFRGLattices.getRvec(b,Basis) for b in Basis.b]
     pairToInequiv::FunctionType
 end
 
