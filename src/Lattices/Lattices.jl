@@ -1,7 +1,7 @@
 include("C2SquareKagome.jl")
 export C2SquareKagome
 include("LargeSquareKagome.jl")
-export LargeSquareKagome
+export LargeSquareKagome,Loop6SquareKagome
 include("Pyrochlore.jl")
 export Pyrochlore
 include("SimpleCubic.jl")
