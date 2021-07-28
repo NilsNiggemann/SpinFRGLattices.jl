@@ -238,7 +238,6 @@ module Loop6SquareKagome
     import ..LargeSquareKagome as LSK
     using ..SpinFRGLattices
     export getLoop6SquareKagome
-    getLoop6SquareKagome(x) = "test"
     function Loop6SquareKagomeBasis()
         x = SA[1,0] 
         y = SA[0,1]
