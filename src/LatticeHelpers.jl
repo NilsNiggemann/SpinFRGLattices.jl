@@ -262,7 +262,7 @@ maps pair of sites to its corresponding inequivalent pair in PairList. x = 1,2 c
 Returns 0 if no pair is found.
 """
 function MapToPair(x::Integer,R::Rvec,PairList,PairTypes)
-    for (i,b) in enumerate(PairList)
+    @inbounds for (i,b) in enumerate(PairList)
         if b === R && PairTypes[i].xi === x 
             return(i)
         end
@@ -304,10 +304,24 @@ function setNeighborCouplings!(couplings,Jparams::AbstractVector,PairList,Basis)
     return couplings
 end
 
+"""gives multiplicity of spl in list of sumelements """
 function multiplicity(spl::sumElements,list)
-    N = length(list)
     mult = 0
-    for i in 1:N
+    for i in eachindex(list)
+        if spl.ki == list[i].ki && spl.kj == list[i].kj && spl.xk == list[i].xk
+            mult+=1
+        end
+    end
+    return mult
+end
+
+"""gives multiplicity of spl in SORTED list of sumelements """
+function multiplicity_sorted(spl::sumElements,list)
+    mult = 0
+    @inbounds for i in eachindex(list)
+        if list[i].ki > spl.ki
+            break
+        end
         if spl.ki == list[i].ki && spl.kj == list[i].kj && spl.xk == list[i].xk
             mult+=1
         end
@@ -367,17 +381,16 @@ function reduceSiteSum(siteSum)
     reducedSum = fill!(Matrix{sumElements}(undef,Nsum+1,Npairs),sumElements(0,0,0,0)) #add +1 to Nsum to always have a (0,0,0,0) sumElements so we can always cut off last index!
     MaxNsum = 1
     for j in 1:Npairs
-        jSumList = @view siteSum[:,j]
+        jSumList = sort( @view siteSum[:,j])
         uniqueElements = unique(jSumList,dims=1)
-        sort!(uniqueElements)
         len = length(uniqueElements)
         if len>MaxNsum
             # determine dimension of new matrix
             MaxNsum = len
         end
         for (k,pair) in enumerate(uniqueElements)
-            m = multiplicity(pair,jSumList)
             if pair.ki != 0 && pair.kj != 0
+                m = multiplicity_sorted(pair,jSumList)
                 reducedSum[k,j] = sumElements(pair.ki,pair.kj,m,pair.xk)
             end
         end
