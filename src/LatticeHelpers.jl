@@ -353,7 +353,8 @@ function CalcSiteSum(PairList,siteList,PairTypes,pairToInequiv::Function,Basis)
     pairs = fill!(Matrix{sumElements}(undef,Nsum,Npairs),sumElements(0,0,0,0)) # generate empty matrix
 
     pairNumber_(R1,R2) = pairNumber(R1,R2,PairList,PairTypes,Basis,pairToInequiv)
-    for (j,Rj) in enumerate(PairList) #lhs of flow eqs
+    Threads.@threads for j in eachindex(PairList) #lhs of flow eqs
+        Rj = PairList[j]
         Ri = Basis.refSites[PairTypes[j].xi]  # current reference site
         for (k,Rk) in enumerate(siteList)
             ki_pair = pairNumber_(Rk,Ri) # maps vertex V_ki to appropriate pair in PairList
@@ -380,7 +381,7 @@ function reduceSiteSum(siteSum)
     Nsum,Npairs = size(siteSum)
     reducedSum = fill!(Matrix{sumElements}(undef,Nsum+1,Npairs),sumElements(0,0,0,0)) #add +1 to Nsum to always have a (0,0,0,0) sumElements so we can always cut off last index!
     MaxNsum = 1
-    for j in 1:Npairs
+    Threads.@threads for j in 1:Npairs
         jSumList = sort( @view siteSum[:,j])
         uniqueElements = unique(jSumList,dims=1)
         len = length(uniqueElements)
