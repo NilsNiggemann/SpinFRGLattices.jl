@@ -205,8 +205,9 @@ Symmetries may then be applied by deleting equivalent elements from PairList.
 function generateLUnitCells(L,Basis::Basis_Struct_2D,refSite = Basis.refSites[1])
     # return
     PairList = Vector{Rvec_2D}(undef,0)
+    n1ref,n2ref = refSite.n1,refSite.n2
     for n1 in -L:L, n2 in -L:L, b in 1:Basis.NCell
-        push!(PairList,Rvec(n1,n2,b))
+        push!(PairList,Rvec(n1+n1ref,n2+n2ref,b))
     end
     return PairList
 end
@@ -214,8 +215,9 @@ end
 function generateLUnitCells(L,Basis::Basis_Struct_3D,refSite = Basis.refSites[1])
     # return
     PairList = Vector{Rvec_3D}(undef,0)
+    n1ref,n2ref,n3ref = refSite.n1,refSite.n2,refSite.n3
     for n1 in -L:L, n2 in -L:L, n3 in -L:L, b in 1:Basis.NCell
-        push!(PairList,Rvec(n1,n2,n3,b))
+        push!(PairList,Rvec(n1+n1ref,n2+n2ref,n3+n3ref,b))
     end
     return PairList
 end
