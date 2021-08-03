@@ -7,6 +7,8 @@ include("GeometryEssentials.jl")
 
 include("Polymers.jl")
 include("LatticeHelpers.jl")
+include("ReduceGeometry.jl")
+include("TestFunctions.jl")
 include("Lattices/Lattices.jl")
 
 end # module

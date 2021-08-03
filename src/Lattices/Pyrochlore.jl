@@ -146,6 +146,7 @@ module Pyrochlore
         # otherwise: global C3 rotation until lhs is on sublattice B
         i = 0
         while Rk.b != 2
+            i+=1
             Rk = C3(Rk)
             Rj = C3(Rj)
             if i >4
