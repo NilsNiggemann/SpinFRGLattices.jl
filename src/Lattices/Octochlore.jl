@@ -1,9 +1,7 @@
-using SpinFRGLattices
-using FRGLatticePlotting
-import SpinFRGLattices as SL
-using StaticArrays,Parameters
-using StructArrays,Symbolics,Plots
-##
+module Octochlore
+using ..SpinFRGLattices
+using StaticArrays,Parameters,StructArrays
+export getOctochlore
 
 function OctochloreBasis()
     a1 = SA[1,0,0]
@@ -24,9 +22,8 @@ dist(R1,R2) = SpinFRGLattices.dist(R1,R2,Basis)
 norm(R) = SpinFRGLattices.norm(R,Basis) 
 getRvec(R)::Rvec_3D = SpinFRGLattices.getRvec(R,Basis) 
 getRefCartesian(R) = getCartesian(R) - SA[0.5,0,0]
-##
+
 R(x::Integer) = Rvec(0,0,0,x)
-plotly()
 ##
 """mirrors x-coordinate at x = 0.5 """
 xMirror(r::AbstractVector) = SA[1-r[1],r[2],r[3]]
@@ -49,24 +46,24 @@ C4(R::Rvec) = getRvec(C4(getCartesian(R)))
 """
 Symmetry: may restrict to section with z<=y<=x
 """
-function inCorrectSubsector(R_ref,R::Rvec)
+function isCorrectSubsector(R_ref,R::Rvec)
     # @unpack n1,n2,n3 = R
-    x,y,z = getCartesian(R)
+    x,y,z = getRefCartesian(R)
     return(x>= 0 && y>=0 && z >=0&& y>= z ) # todo basis!
 end
 
-inCorrectSubsector(R::Rvec) = inCorrectSubsector(Basis.refSites[1],R)
+isCorrectSubsector(R::Rvec) = isCorrectSubsector(Basis.refSites[1],R)
 
 """gives coordinates of R' after using symmetry transformations on R.
 R is arbitrary lattice vector"""
 function mapToSubsector(R::Rvec)
     Rold = R
     i = 0
-    x,y,z = getCartesian(R)
+    x,y,z = getRefCartesian(R)
     i = 0
     while abs(y) < abs(z)
         R = C4(R)
-        x,y,z = getCartesian(R)
+        x,y,z = getRefCartesian(R)
         i+=1
         i >=4 && error("C4 Rotation failure $Rold")
     end
@@ -82,7 +79,7 @@ function mapToSubsector(R::Rvec)
         R= zMirror(R)
     end
     
-    @assert inCorrectSubsector(R) "Error: Vector not correctly mapped: $Rold -> $R"
+    @assert isCorrectSubsector(R) "Error: Vector not correctly mapped: $Rold -> $R"
     return R
 end
 
@@ -125,7 +122,8 @@ end
 
 function getCouplingsToS1(a = 1.,b=0.1,c = 0.01)
     L=2
-    S1Terms = spin[]
+    numType = eltype((a,b,c))
+    S1Terms = spin{numType,Rvec_3D}[]
     for n1 in -L:L,n2 in -L:L,n3 in -L:L
         octs = getOcts(Rvec(n1,n2,n3,1),a,b,c)
         for s1 in octs
@@ -142,7 +140,8 @@ function getCouplingsToS1(a = 1.,b=0.1,c = 0.01)
 end
 
 function reduceCouplings(CoupList)
-    reducedList =  StructArray(spin[])
+    spinType = eltype(CoupList)
+    reducedList =  StructArray(spinType[])
     for S in CoupList
         position = findall(x-> x==S.site,reducedList.site)
         if isempty(position)
@@ -155,7 +154,8 @@ function reduceCouplings(CoupList)
     return reducedList
 end
 function getInequivCouplings(CoupList)
-    reducedList =  StructArray(spin[])
+    spinType = eltype(CoupList)
+    reducedList =  StructArray(spinType[])
     for S in CoupList
         S_red = mapToSubsector(S.site)
         position = findall(x-> x==S_red,reducedList.site)
@@ -163,27 +163,49 @@ function getInequivCouplings(CoupList)
             push!(reducedList,spin(S.fac,S_red))
         else
             fac =  only(reducedList[position].fac)
-            @assert S.fac - fac ≈ 0 "Coupling $(S.fac) != $fac does not match symmetry"
+            @assert isapprox(S.fac - fac,0,atol = 1E-14) "Coupling $(S.fac) != $fac does not match symmetry"
         end
     end
     return reducedList
 end
-@variables α,β,γ
-AllSites = generatePairSites(4,Basis)
-mapToSubsector(Rvec_3D(1, 0, 0, 3))
-mapToSubsector.(AllSites)
-redCoup = reduceCouplings(getCouplingsToS1(α,β,γ)) 
-# redCoup = reduceCouplings(getCouplingsToS1(1.,0.5,0.1)) 
-ineqCoup = getInequivCouplings(redCoup)
-##
+function getInequivCouplings(α,β,γ)
+    getInequivCouplings(reduceCouplings(getCouplingsToS1(α,β,γ)))
+end
+
 function getOctochlore(NLen,beta = 0.5,gamma = 0.1;test = false)
     Name = string("Octochlore_NLen=",NLen)
-    System =  getLatticeGeometry(NLen,Name,pairToInequiv,inCorrectSubsector,Basis,test=test)
-    @unpack PairList,couplings = System
-    # setNeighborCouplings!(couplings,J,PairList,Basis)
-
+    System =  getLatticeGeometry(NLen,Name,pairToInequiv,isCorrectSubsector,Basis,test=test)
+    @unpack PairList,PairTypes,couplings = System
+    IneqCouplings = getInequivCouplings(1.,Float64(beta),Float64(gamma))
+    NonSetSites = StructArray(eltype(IneqCouplings)[])
+    for Spin in IneqCouplings
+        if abs(Spin.fac) > 1E-14
+            if Spin.site in PairList
+                setCoupling!(couplings,1,Spin.site,Spin.fac,PairList,PairTypes)
+            else
+                push!(NonSetSites,Spin)
+            end
+        end
+    end
+    isempty(NonSetSites) || @warn "Couplings could not be set for $(NonSetSites.site) with couplings $(NonSetSites.fac)"
     return(System)
 end
-System = getOctochlore(4,test = true)
-# scatter!([0.5],[0.5],[0.5],color = :black,label = "center")
 
+end# module
+# @variables α,β,γ
+# AllSites = generatePairSites(4,Basis)
+# mapToSubsector(Rvec_3D(1, 0, 0, 3))
+# mapToSubsector.(AllSites)
+# redCoup = reduceCouplings(getCouplingsToS1(α,β,γ)) 
+# redCoup = reduceCouplings(getCouplingsToS1(1.,0.5,0.1)) 
+# ineqCoup = getInequivCouplings(redCoup)
+# Oct = getOctochlore(10,0,1)
+# pl = plotSystem(Oct,Basis,plotAll = false)
+# plotCouplings(Oct,Basis,pl)
+
+# testPairListSym(Oct.PairList,xMirror,yMirror,zMirror,C4)
+# Plots.gr()
+# Oct = getOctochlore(10,0,1)
+# Lattice = LatticeInfo(System = Oct,Basis=Basis,pairToInequiv = pairToInequiv)
+# k,Jk = Fourier2D(Oct.couplings,(x,y)-> SA[x,x,y],Lattice,ext= 2pi,res= 100)
+# Chikplot(k,Jk,dpi =500)

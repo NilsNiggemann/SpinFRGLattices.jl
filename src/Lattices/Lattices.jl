@@ -10,3 +10,5 @@ include("SquareKagome.jl")
 export SquareKagome
 include("SquareLattice.jl")
 export SquareLattice
+include("Octochlore.jl")
+export Octochlore
