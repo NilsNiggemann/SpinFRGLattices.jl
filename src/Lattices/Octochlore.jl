@@ -172,22 +172,30 @@ function getInequivCouplings(α,β,γ)
     getInequivCouplings(reduceCouplings(getCouplingsToS1(α,β,γ)))
 end
 
+function mapCouplingsToSiteList(IneqCouplings,PairList,PairTypes = ones(length(PairList)))
+    NonSetSites = StructArray(eltype(IneqCouplings)[])
+    couplings = zeros(length(PairList))
+    for Spin in IneqCouplings
+        if abs(Spin.fac) > 1E-14
+            position = findall(x-> x==Spin.site,PairList)
+            if isempty(position)
+                # setCoupling!(couplings,1,Spin.site,Spin.fac,PairList,PairTypes)
+                push!(NonSetSites,Spin)
+            else
+                couplings[only(position)] =Spin.fac 
+            end
+        end
+    end
+    isempty(NonSetSites) || @warn "Couplings could not be set for $(NonSetSites.site) with couplings $(NonSetSites.fac)"
+    return couplings
+end
+
 function getOctochlore(NLen,beta = 0.5,gamma = 0.1;test = false)
     Name = string("Octochlore_NLen=",NLen)
     System =  getLatticeGeometry(NLen,Name,pairToInequiv,isCorrectSubsector,Basis,test=test)
     @unpack PairList,PairTypes,couplings = System
     IneqCouplings = getInequivCouplings(1.,Float64(beta),Float64(gamma))
-    NonSetSites = StructArray(eltype(IneqCouplings)[])
-    for Spin in IneqCouplings
-        if abs(Spin.fac) > 1E-14
-            if Spin.site in PairList
-                setCoupling!(couplings,1,Spin.site,Spin.fac,PairList,PairTypes)
-            else
-                push!(NonSetSites,Spin)
-            end
-        end
-    end
-    isempty(NonSetSites) || @warn "Couplings could not be set for $(NonSetSites.site) with couplings $(NonSetSites.fac)"
+    couplings .= mapCouplingsToSiteList(IneqCouplings,PairList)
     return(System)
 end
 
