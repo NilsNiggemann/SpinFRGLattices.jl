@@ -16,10 +16,8 @@ function OctochloreBasis()
 end
 const Basis = OctochloreBasis()
 
-import SpinFRGLattices: getCartesian,dist,norm,getRvec
 getCartesian(R) = SpinFRGLattices.getCartesian(R,Basis) 
 dist(R1,R2) = SpinFRGLattices.dist(R1,R2,Basis) 
-norm(R) = SpinFRGLattices.norm(R,Basis) 
 getRvec(R)::Rvec_3D = SpinFRGLattices.getRvec(R,Basis) 
 getRefCartesian(R) = getCartesian(R) - SA[0.5,0,0]
 
@@ -200,20 +198,3 @@ function getOctochlore(NLen,beta = 0.5,gamma = 0.1;test = false)
 end
 
 end# module
-# @variables α,β,γ
-# AllSites = generatePairSites(4,Basis)
-# mapToSubsector(Rvec_3D(1, 0, 0, 3))
-# mapToSubsector.(AllSites)
-# redCoup = reduceCouplings(getCouplingsToS1(α,β,γ)) 
-# redCoup = reduceCouplings(getCouplingsToS1(1.,0.5,0.1)) 
-# ineqCoup = getInequivCouplings(redCoup)
-# Oct = getOctochlore(10,0,1)
-# pl = plotSystem(Oct,Basis,plotAll = false)
-# plotCouplings(Oct,Basis,pl)
-
-# testPairListSym(Oct.PairList,xMirror,yMirror,zMirror,C4)
-# Plots.gr()
-# Oct = getOctochlore(10,0,1)
-# Lattice = LatticeInfo(System = Oct,Basis=Basis,pairToInequiv = pairToInequiv)
-# k,Jk = Fourier2D(Oct.couplings,(x,y)-> SA[x,x,y],Lattice,ext= 2pi,res= 100)
-# Chikplot(k,Jk,dpi =500)
