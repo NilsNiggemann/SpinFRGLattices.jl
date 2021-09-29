@@ -2,7 +2,7 @@
 Functions and data types that can be used to construct Lattices.
 """
 
-export  Basis_Struct_2D, Basis_Struct_3D,Basis_Struct, Rvec_2D, Rvec_3D, Rvec, getLatticeVec, norm, translateToOrigin, translation, getCartesian, dist, generatePairSites,generateLUnitCells
+export  Basis_Struct_2D, Basis_Struct_3D,Basis_Struct, Rvec_2D, Rvec_3D, Rvec, getLatticeVec, norm, translateToOrigin, translation, getCartesian, aboveLine, MirrorLine, dist, generatePairSites,generateLUnitCells
 
 
 abstract type Rvec end
@@ -149,6 +149,24 @@ function getRvec(r::StaticArray,Basis)
     end
     error("Vector not in lattice: ", r)
 end
+
+function aboveLine(f::Function,R::Rvec_2D,Basis)
+    r = getCartesian(R,Basis)
+    y = f(r[1])
+    return r[2] > y
+end
+
+function MirrorLine(slope::Real,r::AbstractVector)
+    l = SA[1,slope] # vector along line
+    return 2* r' * l /(norm(l)^2) *l - r
+end
+function MirrorLine(slope::Real,R::Rvec_2D,Basis)
+    mirr(R) = MirrorLine(slope,R)
+    Cart(R) = getCartesian(R,Basis)
+    RV(r) = getRvec(r,Basis)
+    return R |> Cart |> mirr |> RV
+end
+
 
 """Returns list of nearest neighbor pairs"""
 function getNN(R::Rvec_2D,Basis)
