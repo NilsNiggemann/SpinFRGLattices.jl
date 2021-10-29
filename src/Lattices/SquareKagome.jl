@@ -257,7 +257,7 @@ module SquareKagome
         return mapToMirrorSector(Rk, Rj) # map to correct sector according to symmetry 
     end
 
-    function getMirrorSquareKagome(NLen,J=1,Jx=0.;test = false)
+    function getMirrorSquareKagome(NLen,J1=1,J2_J3=1,Jx=0;test = false)
         Name = string("MSquagome_NLen=",NLen)
         System = getLatticeGeometry(NLen,Name,MirrorpairToInequiv,inMirrorSector,Basis,test=test)
         @unpack couplings,PairList,PairTypes = System
@@ -270,9 +270,9 @@ module SquareKagome
             end
         end 
 
-        setJ!(1,Rvec(0,0,2),J)
-        setJ!(2,Rvec(0,0,1),J) 
-        setJ!(2,Rvec(0,0,3),J)
+        setJ!(1,Rvec(0,0,2),J2_J3)
+        setJ!(2,Rvec(0,0,1),J2_J3) 
+        setJ!(2,Rvec(0,0,3),J1)
 
         setJ!(2,Rvec(0,0,4),Jx)
 
