@@ -10,6 +10,6 @@ include("LatticeHelpers.jl")
 include("ReduceGeometry.jl")
 include("TestFunctions.jl")
 include("Lattices/Lattices.jl")
-include("precompile.jl")
-__precompile__quiet__()
+# include("precompile.jl")
+# __precompile__quiet__()
 end # module
