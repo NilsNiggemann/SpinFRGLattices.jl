@@ -7,21 +7,21 @@ module SquareKagome
     using ..SpinFRGLattices
     export getSquareKagome,getMirrorSquareKagome
     # "shuriken-like structure: Not used in main implementation"
-    # function SquareKagomeBasis()
-    #     x = SA[1,0] 
-    #     y = SA[0,1]
+    function ShurikenBasis()
+        x = SA[1,0] 
+        y = SA[0,1]
 
-    #     b = (√3 -1)/2
-    #     c = √3 /2 * b
+        b = (√3 -1)/2
+        c = √3 /2 * b
 
-    #     b1 = SA[0,1/2]
-    #     b2 = b1 + SA[c,b/2]
-    #     b3 = b1 + SA[c,-b/2]
-    #     b4 = b3 + SA[b,0]
-    #     b5 = b2 + SA[b,0]
-    #     b6 = SA[1/2,1.]
-    #     return Basis_Struct_2D(a1=x,a2=y,b= [b1,b2,b3,b4,b5,b6],NNdist = b,NUnique = 2,SiteType= [1,2,2,2,2,1])
-    # end
+        b1 = SA[0,1/2]
+        b2 = b1 + SA[c,b/2]
+        b3 = b1 + SA[c,-b/2]
+        b4 = b3 + SA[b,0]
+        b5 = b2 + SA[b,0]
+        b6 = SA[1/2,1.]
+        return Basis_Struct_2D(a1=x,a2=y,b= [b1,b2,b3,b4,b5,b6],NNdist = b,NUnique = 2,SiteType= [1,2,2,2,2,1])
+    end
       
     function SquareKagomeBasis()
         x = SA[1,0] 
