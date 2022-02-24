@@ -52,7 +52,7 @@ function MapToPair(x::Integer,R::Rvec,PairList,PairTypes)
 end
 
 """Sets coupling between ref site x and R to val. To map from x and R to the corresponding pair, we need PairList and siteTypes"""
-function setCoupling!(couplings,x,R,val::Number,PairList,PairTypes)
+function setCoupling!(couplings,x::Int,R::Rvec,val::Number,PairList,PairTypes)
     idx = MapToPair(x,R,PairList,PairTypes)
     if idx <=0
         println(PairList)
@@ -60,6 +60,12 @@ function setCoupling!(couplings,x,R,val::Number,PairList,PairTypes)
         error("problem setting coupling for (x,R,val) = ",(x,R,val))
     end
     couplings[idx] = val
+end
+
+"""Sets coupling between ref site x and R to val. Takes full Geometry as input"""
+
+function setCoupling!(System::Geometry,x::Int,R::Rvec,val::Number)
+    setCoupling!(System.couplings,x,R,val,System.PairList,System.PairTypes)
 end
 
 """Sets couplings according to given list with the first element being the nearest neigbor coupling. Currently only works for lattices with equivalent sites and sorted PairList!"""
