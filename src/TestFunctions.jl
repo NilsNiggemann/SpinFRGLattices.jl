@@ -1,8 +1,8 @@
 export testPairListSym
 
-function testGeometry(Geometry::Geometry)
+function testGeometry(Geo::Geometry)
 
-    @unpack siteSum,Npairs,invpairs,OnsitePairs,NUnique,PairList,PairTypes = Geometry
+    @unpack siteSum,Npairs,invpairs,couplings,OnsitePairs,NUnique,PairList,PairTypes = Geo
     @testset "SiteSum" begin 
         for j in OnsitePairs
             for spl in siteSum[:,j]
@@ -20,6 +20,12 @@ function testGeometry(Geometry::Geometry)
     @testset "invpairs" begin
         for i in invpairs
             @test i > 0 && i <= Npairs
+        end
+    end
+
+    @testset "couplings" begin
+        for (i,c) in zip(invpairs,couplings)
+            @test c == couplings[i]
         end
     end
     
