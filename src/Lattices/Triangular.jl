@@ -17,12 +17,12 @@ module TriangularLattice
     dist(R1,R2) = SpinFRGLattices.dist(R1,R2,Basis) 
     getRvec(R) = SpinFRGLattices.getRvec(R,Basis)
 
-    """performs C4 rotation on R"""
+    """performs C6 rotation on R"""
     function C6(r::AbstractVector)
         SA[1/2 -sqrt(3)/2; sqrt(3)/2 1/2] * r
     end
 
-    """performs C4 rotation on R"""
+    """performs C6 rotation on R"""
     function C6(R::Rvec)
         return R |> getCartesian |> C6 |> getRvec
     end
@@ -69,7 +69,7 @@ module TriangularLattice
     end
 
     """
-    returns Geometry struct with all relevant information about the Square lattice. We can either consider N nearest neighbor pairs or all unit cells within length L of origin.
+    returns Geometry struct with all relevant information about the Triangular lattice. We can either consider N nearest neighbor pairs or all unit cells within length L of origin.
     """
     function getTriangularLattice(NLen,J = [1.,0.5];kwargs...)
         Name = string("TriangularLattice_NLen=",NLen)
