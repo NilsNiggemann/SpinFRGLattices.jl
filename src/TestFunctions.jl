@@ -94,3 +94,17 @@ function testPairListSym(PairList::AbstractVector,Syms...)
     end
     return warnings
 end
+
+function checkSymmetries(PairList::Vector{RT},Sym::Function) where RT <: Rvec
+    for R in PairList
+        Rn = Sym(R)
+    end
+    return true
+end
+
+function checkSymmetries(PairList::Vector{RT},Syms...) where RT <: Rvec
+    for Sym in Syms
+        checkSymmetries(PairList,Sym)
+    end
+    return true
+end

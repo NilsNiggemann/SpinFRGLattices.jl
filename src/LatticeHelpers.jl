@@ -2,7 +2,7 @@
 Functions and data types that can be used to construct Lattices.
 """
 
-export  Basis_Struct_2D, Basis_Struct_3D,Basis_Struct, Rvec_2D, Rvec_3D, Rvec, getLatticeVec, norm, translateToOrigin, translation, getCartesian, aboveLine, MirrorLine, dist, generatePairSites,generateLUnitCells
+export  Basis_Struct_2D, Basis_Struct_3D,Basis_Struct, Rvec_2D, Rvec_3D, Rvec, getLatticeVec, norm, translateToOrigin, translation, getCartesian, aboveLine, belowLine,aboveLine_strict, belowLine_strict, MirrorLine, dist, generatePairSites,generateLUnitCells
 
 
 abstract type Rvec end
@@ -151,9 +151,22 @@ function getRvec(r::StaticArray,Basis)
 end
 
 function aboveLine(f::Function,R::Rvec_2D,Basis)
+    @warn "Function 'aboveLine' is deprecated, as results might be ambiguous. Please use 'aboveLine_strict' instead" maxlog=1
     r = getCartesian(R,Basis)
     y = f(r[1])
     return r[2] > y
+end
+
+function aboveLine_strict(f::Function,R::Rvec_2D,Basis)
+    r = getCartesian(R,Basis)
+    y = f(r[1])
+    return r[2] > y && !(r[2] ≈ y)
+end
+
+function belowLine_strict(f::Function,R::Rvec_2D,Basis)
+    r = getCartesian(R,Basis)
+    y = f(r[1])
+    return r[2] < y && !(r[2] ≈ y)
 end
 
 function MirrorLine(slope::Real,r::AbstractVector)
