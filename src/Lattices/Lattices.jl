@@ -12,5 +12,7 @@ include("SquareLattice.jl")
 export SquareLattice
 include("Octochlore.jl")
 export Octochlore
+include("Honeycomb.jl")
+export Octochlore
 include("Triangular.jl")
 export TriangularLattice
