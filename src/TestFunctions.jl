@@ -25,7 +25,7 @@ function testGeometry(Geo::Geometry)
 
     @testset "couplings" begin
         for (i,c) in zip(invpairs,couplings)
-            @test c == couplings[i]
+            @test isapprox(c, couplings[i],atol =eps(Float64))
         end
     end
     
