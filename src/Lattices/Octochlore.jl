@@ -151,11 +151,10 @@ function reduceCouplings(CoupList)
     end
     return reducedList
 end
-function getInequivCouplings(CoupList)
-    spinType = eltype(CoupList)
+function getInequivCouplings(CoupList::AbstractVector{spinType},mapSubSec=mapToSubsector::Function) where spinType
     reducedList =  StructArray(spinType[])
     for S in CoupList
-        S_red = mapToSubsector(S.site)
+        S_red = mapSubSec(S.site)
         position = findall(x-> x==S_red,reducedList.site)
         if isempty(position)
             push!(reducedList,spin(S.fac,S_red))
@@ -190,10 +189,15 @@ end
 
 function getOctochlore(NLen,beta = 0.5,gamma = 0.1;test = false)
     Name = string("Octochlore_NLen=",NLen)
-    System =  getLatticeGeometry(NLen,Name,pairToInequiv,isCorrectSubsector,Basis,test=test)
+    System =  getLatticeGeometry(NLen,Name,pairToInequiv,isCorrectSubsector,Basis,test=false)
     @unpack PairList,PairTypes,couplings = System
     IneqCouplings = getInequivCouplings(1.,Float64(beta),Float64(gamma))
     couplings .= mapCouplingsToSiteList(IneqCouplings,PairList)
+    couplings[System.OnsitePairs] .= 0.
+
+    if test 
+        testGeometry(System)
+    end
     return(System)
 end
 

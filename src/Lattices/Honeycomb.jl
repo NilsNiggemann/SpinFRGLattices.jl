@@ -2,7 +2,7 @@ module Honeycomb
     using ..SpinFRGLattices
     using StaticArrays,Parameters,StructArrays
     
-    export getHoneycombLattice
+    export getHoneycomb
     
     function HoneycombBasis()
         a1 = SA[1,0]
@@ -77,17 +77,67 @@ module Honeycomb
         Rk = Rvec(0,0,1)
         return Rk, mapToSubsector(Rj) #give the vector in correct subsector
     end
-
+    
     """
     returns Geometry struct with all relevant information about the Honeycomb lattice. We can either consider N nearest neighbor pairs or all unit cells within length L of origin.
-    """
-    function getHoneycombLattice(NLen,J = [1.,0.5];kwargs...)
+        """
+        function getHoneycomb(NLen,J = [1.,0.5];kwargs...)
         Name = string("Honeycomb_NLen=",NLen)
         System =  getLatticeGeometry(NLen,Name,pairToInequiv,inCorrectSubsector,Basis;kwargs...)
 
         @unpack PairList,couplings = System
         setNeighborCouplings!(couplings,J,PairList,Basis)
         return(System)
+    end
+    
+    ## cluster Hexagon couplings
+    using .Octochlore: spin, reduceCouplings,getInequivCouplings,mapCouplingsToSiteList
+    import .Octochlore: getInequivCouplings
+    function getInequivCouplings(alpha::Number,gamma::Number)
+        a= reduceCouplings(getCouplingsToS1(alpha,gamma))
+        getInequivCouplings(a,mapToSubsector)
+    end
+
+    function getHexas(refSite::Rvec,alpha = 1., gamma= 0.)
+        Allsites = generateLUnitCells(2,Basis,refSite)
+        center = getCartesian(refSite) + 0.5 *(Basis.a1+Basis.b[2])
+        centerNorm(x) = norm(getCartesian(x) - center)
+        AllNorms = sort(unique(round.(centerNorm.(Allsites),digits = 14)))
+        getNeighorFromCenter(i) = filter(x->centerNorm(x) ≈ AllNorms[i],Allsites)
+        firstHexa = getNeighorFromCenter(1)
+        secondHexa = getNeighorFromCenter(2)
+        return (StructArray(append!([spin(alpha,site) for site in firstHexa],[spin(gamma,site) for site in secondHexa])))
+    end
+
+    R(x::Integer) = Rvec(0,0,x)
+    function getCouplingsToS1(alpha::T = 1., gamma::T= 0. ) where T <: Number
+        L=2
+        S1Terms = spin{T,Rvec_2D}[]
+        for n1 in -L:L,n2 in -L:L
+            hexas = getHexas(Rvec(n1,n2,1),alpha,gamma)
+            for s1 in hexas
+                for s2 in hexas
+                    if s1.site == R(1)
+                        push!(S1Terms,spin(s1.fac*s2.fac,s2.site))
+                    elseif s2.site == R(1)
+                        push!(S1Terms,spin(s1.fac*s2.fac,s1.site))
+                    end
+                end
+            end
+        end
+        return StructArray(S1Terms)
+    end
+
+    function getHoneycomb(NLen;alpha=1.,gamma=0.,test = false)
+        System = getHoneycomb(NLen,[0.,0.])
+        @unpack PairList,PairTypes,couplings = System
+        IneqCouplings = getInequivCouplings(Float64(alpha),Float64(gamma))
+        couplings .= 0.5 .*mapCouplingsToSiteList(IneqCouplings,PairList)
+        couplings[System.OnsitePairs] .= 0.
+        if test 
+            testGeometry(System)
+        end
+        return System
     end
 
 end
