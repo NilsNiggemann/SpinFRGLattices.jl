@@ -2,7 +2,7 @@ module Honeycomb
     using ..SpinFRGLattices
     using StaticArrays,Parameters,StructArrays
     
-    export getHoneycomb
+    export getHoneycomb,getHoneycombGamma
     
     function HoneycombBasis()
         a1 = SA[1,0]
