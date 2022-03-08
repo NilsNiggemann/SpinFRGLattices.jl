@@ -134,6 +134,8 @@ module Honeycomb
         IneqCouplings = getInequivCouplings(Float64(alpha),Float64(gamma))
         couplings .= 0.5 .*mapCouplingsToSiteList(IneqCouplings,PairList)
         couplings[System.OnsitePairs] .= 0.
+        largestCoupling = maximum(abs,couplings)
+        couplings ./= largestCoupling
         if test 
             testGeometry(System)
         end

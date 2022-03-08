@@ -195,6 +195,8 @@ function getOctochlore(NLen,beta = 0.5,gamma = 0.1;test = false)
     couplings .= mapCouplingsToSiteList(IneqCouplings,PairList)
     couplings[System.OnsitePairs] .= 0.
 
+    largestCoupling = maximum(abs,couplings)
+    couplings ./= largestCoupling
     if test 
         testGeometry(System)
     end
