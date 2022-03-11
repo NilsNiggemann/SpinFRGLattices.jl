@@ -24,18 +24,34 @@ struct sitePair
 end
 
 """Geometry which contains all relevant information about the Lattice that is needed in the FRG"""
-@with_kw struct Geometry{RvecDim}
+struct Geometry{RvecDim,SiteSumType <: StructArray{sumElements,2}}
     Name::String
-    NLen::Int = 1 # System size: number of nearest neighbor pairs
-    siteSum::Matrix{sumElements} #Matrix which contains all info about the site sum
-    Npairs::Int = size(siteSum,2)
-    Nsum::Vector{Int} = calcMaxpairs(siteSum) #number of terms in the site sum for each Rij
+    NLen::Int # System size: number of nearest neighbor pairs
+    siteSum::SiteSumType #Matrix which contains all info about the site sum
+    Npairs::Int
+    Nsum::Vector{Int} #number of terms in the site sum for each Rij
     couplings::Vector{Float64} # Jij for each pair
     PairList::Vector{RvecDim} # list of inequivalent pairs
-    invpairs::Vector{Int} = collect(Int,1:Npairs) # list of inverted pairs
-    NUnique::Int = 1 # Number of unique sites in each cell
-    PairTypes::Vector{sitePair} = [sitePair(1,1) for i in 1:Npairs] # gives pairs unique site indices according to PairList. Entries are always less or equal to NUnique
-    OnsitePairs::Vector{Int} = [1] # positions of onsite pairs in PairList
+    invpairs::Vector{Int}# list of inverted pairs
+    NUnique::Int # Number of unique sites in each cell
+    PairTypes::Vector{sitePair} # gives pairs unique site indices according to PairList. Entries are always less or equal to NUnique
+    OnsitePairs::Vector{Int} # positions of onsite pairs in PairList
+end
+
+function Geometry(;
+    Name::String,
+    NLen::Int = 1,
+    siteSum,
+    Npairs::Int = size(siteSum,2),
+    Nsum::Vector{Int} = calcMaxpairs(siteSum),
+    couplings::Vector{Float64},
+    PairList::Vector{RvecDim},
+    invpairs::Vector{Int} = collect(Int,1:Npairs),
+    NUnique::Int = 1,
+    PairTypes::Vector{sitePair} = [sitePair(1,1) for i in 1:Npairs],
+    OnsitePairs::Vector{Int} = [1] 
+) where RvecDim
+    return Geometry(Name,NLen,StructArray(siteSum),Npairs,Nsum,couplings,PairList,invpairs,NUnique,PairTypes,OnsitePairs)
 end
 
 """Returns Vector containing the exact length of each row of siteSum so that site sum can be ended as soon as possible and we don't need to check if m==0 at performance critical parts."""
