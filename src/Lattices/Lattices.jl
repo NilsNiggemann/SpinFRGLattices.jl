@@ -13,6 +13,6 @@ export SquareLattice
 include("Octochlore.jl")
 export Octochlore
 include("Honeycomb.jl")
-export Octochlore
+export Honeycomb
 include("Triangular.jl")
 export TriangularLattice

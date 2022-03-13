@@ -80,8 +80,8 @@ module Honeycomb
     
     """
     returns Geometry struct with all relevant information about the Honeycomb lattice. We can either consider N nearest neighbor pairs or all unit cells within length L of origin.
-        """
-        function getHoneycomb(NLen,J;kwargs...)
+    """
+    function getHoneycomb(NLen,J;kwargs...)
         Name = string("Honeycomb_NLen=",NLen)
         System =  getLatticeGeometry(NLen,Name,pairToInequiv,inCorrectSubsector,Basis;kwargs...)
 
