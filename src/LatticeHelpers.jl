@@ -100,7 +100,7 @@ function squareNorm(r::AbstractArray)
 end
 
 function norm(r::AbstractArray)
-    return( sqrt(sum(r .* r)))
+    return( sqrt(squareNorm(r)))
 end
 
 function norm(R::Rvec,Basis)
