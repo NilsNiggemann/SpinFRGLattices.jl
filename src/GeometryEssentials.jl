@@ -23,7 +23,10 @@ struct sitePair
     xj::Int
 end
 
-"""Geometry which contains all relevant information about the Lattice that is needed in the FRG"""
+"""Geometry which contains all relevant information about the Lattice that is needed in the FRG
+{RvecDim,SiteSumType <: StructArray{sumElements,2}}
+RvecDim is type of Rvec, SiteSumType should be a struct array for performance reasons!
+"""
 struct Geometry{RvecDim,SiteSumType <: StructArray{sumElements,2}}
     Name::String
     NLen::Int # System size: number of nearest neighbor pairs

@@ -90,6 +90,15 @@ function getCartesian(R::Rvec_3D,Basis)
     return R.n1 * Basis.a1 + R.n2 * Basis.a2 + R.n3 * Basis.a3 + Basis.b[R.b]
 end
 
+squareNorm(x::Number) = abs2(x)
+function squareNorm(r::AbstractArray)
+    n = 0.
+    for i in r
+        n += squareNorm(i)
+    end
+    return n
+end
+
 function norm(r::AbstractArray)
     return( sqrt(sum(r .* r)))
 end
