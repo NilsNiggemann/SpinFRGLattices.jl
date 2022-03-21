@@ -40,7 +40,7 @@ end
 maps pair of sites to its corresponding inequivalent pair in PairList. x = 1,2 corresponds to index of reference site.
 Returns 0 if no pair is found.
 """
-function MapToPair(x::Integer,R::Rvec,PairList,PairTypes)
+function MapToPair(x::Integer,R::RT,PairList::AbstractVector{RT},PairTypes) where RT <:Rvec
     @inbounds for (i,b) in enumerate(PairList)
         if b === R && PairTypes[i].xi === x 
             return(i)
