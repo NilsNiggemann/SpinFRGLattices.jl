@@ -91,13 +91,8 @@ function getCartesian(R::Rvec_3D,Basis)
 end
 
 squareNorm(x::Number) = abs2(x)
-function squareNorm(r::AbstractArray)
-    n = 0.
-    for i in r
-        n += squareNorm(i)
-    end
-    return n
-end
+
+@inline squareNorm(A::AbstractArray) = sum(squareNorm,A)
 
 function norm(r::AbstractArray)
     return( sqrt(squareNorm(r)))
