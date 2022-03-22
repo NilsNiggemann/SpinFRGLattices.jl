@@ -1,7 +1,7 @@
 module Octochlore
 using ..SpinFRGLattices
 using StaticArrays,Parameters,StructArrays
-export getOctochlore
+export getOctochlore,getOctochloreGamma
 
 function OctochloreBasis()
     a1 = SA[1,0,0]

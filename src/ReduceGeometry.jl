@@ -1,4 +1,4 @@
-export MapToPair, setCoupling!,setNeighborCouplings!, getSiteType, testGeometry, getLatticeGeometry
+export MapToPair, setCoupling!,setNeighborCouplings!, getSiteType, testGeometry, getLatticeGeometry,getFRGComplexity
 """Gives a sorted list of pairs for all reference sites together with a list which types of sites are paired"""
 function sortedPairList(N,Basis,method = generatePairSites)
     type = typeof(Basis.refSites[1])
@@ -98,26 +98,6 @@ function setNeighborCouplings!(couplings,Jparams::AbstractVector,PairList,Basis)
     end
     return couplings
 end
-
-# function setNeighborCouplings!(couplings,Jparams::AbstractVector,PairList,Basis)
-#     Npairs = length(PairList)
-#     neigborcoup = zeros(Npairs)    
-#     println(Npairs)
-#     neigborcoup[2:1+length(Jparams)] = Jparams
-    
-#     index = 1
-#     lastr = 0.
-#     norm_B(R) = norm(R,Basis)
-#     norms = norm_B.(PairList)
-#     for (i,r) in enumerate(norms)
-#         if abs(r - lastr)>1E-14
-#             index +=1
-#             lastr = r
-#         end
-#         couplings[i] = neigborcoup[index]
-#     end
-#     return couplings
-# end
 
 """gives multiplicity of spl in list of sumelements """
 function multiplicity(spl::sumElements,list)
@@ -243,3 +223,13 @@ function getLatticeGeometry(NLen,Name,pairToInequiv::Function,inCorrectSector::F
     end
     return(System)
 end
+
+function getFRGComplexity(System::Geometry)
+    s = 0
+    for i in eachindex(System.Npairs)
+        s += System.Npairs[i] *O.Nsum[i]
+    end
+    return s
+end
+
+getFRGComplexity(S1::Geometry,S2::Geometry) = getFRGComplexity(S1)/getFRGComplexity(S2)
