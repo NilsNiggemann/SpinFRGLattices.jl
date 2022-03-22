@@ -93,7 +93,6 @@ end
 squareNorm(x::Number) = abs2(x)
 
 @inline squareNorm(A::AbstractArray) = sum(squareNorm,A)
-
 function norm(r::AbstractArray)
     return( sqrt(squareNorm(r)))
 end

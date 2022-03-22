@@ -70,24 +70,54 @@ end
 
 """Sets couplings according to given list with the first element being the nearest neigbor coupling. Currently only works for lattices with equivalent sites and sorted PairList!"""
 function setNeighborCouplings!(couplings,Jparams::AbstractVector,PairList,Basis)
-    Npairs = length(PairList)
-    neigborcoup = zeros(Npairs)    
-    println(Npairs)
+    couplings .= 0.
+    neigborcoup = copy(couplings)
+
     neigborcoup[2:1+length(Jparams)] = Jparams
-    
-    index = 1
-    lastr = 0.
-    norm_B(R) = norm(R,Basis)
-    norms = norm_B.(PairList)
-    for (i,r) in enumerate(norms)
-        if abs(r - lastr)>1E-14
-            index +=1
-            lastr = r
+
+    for R_Ref in Basis.refSites
+        distance(x) = dist(R_Ref,x,Basis)
+        # lt(x,y) = distance(x) <distance(y)
+        # SortedIndices = sortperm(PairList,lt = lt)
+        norms = distance.(PairList)
+        index = 1
+        lastr = 0.
+        for (i,r) in enumerate(norms)
+            if abs(r - lastr)>1E-14
+                index +=1
+                lastr = r
+            end
+            if couplings[i] == 0. 
+                couplings[i] = neigborcoup[index]
+            else
+                @assert couplings[i] == neigborcoup[index] "couplings are not compatible between inequivalent sites"
+            end
+
         end
-        couplings[i] = neigborcoup[index]
+    
     end
     return couplings
 end
+
+# function setNeighborCouplings!(couplings,Jparams::AbstractVector,PairList,Basis)
+#     Npairs = length(PairList)
+#     neigborcoup = zeros(Npairs)    
+#     println(Npairs)
+#     neigborcoup[2:1+length(Jparams)] = Jparams
+    
+#     index = 1
+#     lastr = 0.
+#     norm_B(R) = norm(R,Basis)
+#     norms = norm_B.(PairList)
+#     for (i,r) in enumerate(norms)
+#         if abs(r - lastr)>1E-14
+#             index +=1
+#             lastr = r
+#         end
+#         couplings[i] = neigborcoup[index]
+#     end
+#     return couplings
+# end
 
 """gives multiplicity of spl in list of sumelements """
 function multiplicity(spl::sumElements,list)

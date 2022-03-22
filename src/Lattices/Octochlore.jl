@@ -187,9 +187,19 @@ function mapCouplingsToSiteList(IneqCouplings,PairList,PairTypes = ones(length(P
     return couplings
 end
 
-function getOctochlore(NLen,beta = 0.5,gamma = 0.1;test = false)
+function getOctochlore(NLen,J=[1.,0.];test = false)
     Name = string("Octochlore_NLen=",NLen)
     System =  getLatticeGeometry(NLen,Name,pairToInequiv,isCorrectSubsector,Basis,test=false)
+    @unpack PairList,PairTypes,couplings = System
+    setNeighborCouplings!(couplings,J,PairList,Basis)
+    if test 
+        testGeometry(System)
+    end
+    return(System)
+end
+
+function getOctochloreGamma(NLen;beta = 0.5,gamma = 0.1,test = false)
+    System =  getOctochlore(NLen,[0.,0.])
     @unpack PairList,PairTypes,couplings = System
     IneqCouplings = getInequivCouplings(1.,Float64(beta),Float64(gamma))
     couplings .= mapCouplingsToSiteList(IneqCouplings,PairList)
