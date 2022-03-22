@@ -1,35 +1,49 @@
 using SpinFRGLattices,Test
 @test norm([1,1,1]) ≈ sqrt(3)
 
-println("Testing C2SquareKagome")
-C2SquareKagome.getC2DimerSquareKagome(6,test = true)
+@testset verbose = true "Testing Lattices" begin
+    @testset "Testing C2SquareKagome" begin
+        testGeometry(C2SquareKagome.getC2DimerSquareKagome(6))
+    end
 
-println("Testing LargeSquareKagome")
-LargeSquareKagome.getNoMirrDimerSquareKagome(6,test = true)
+    @testset "Testing LargeSquareKagome" begin
+        testGeometry(LargeSquareKagome.getNoMirrDimerSquareKagome(6))
+    end
 
-println("Testing Pyrochlore")
-Pyrochlore.getPyrochlore(6,test=true)
+    @testset "Testing Pyrochlore" begin
+        testGeometry(Pyrochlore.getPyrochlore(6))
+    end
 
-println("Testing SimpleCubic")
-SimpleCubic.getCubic(6,test=true)
+    @testset "Testing SimpleCubic" begin
+        testGeometry(SimpleCubic.getCubic(6))
+    end
 
-println("Testing SquareKagome")
-SquareKagome.getMirrorSquareKagome(6,test=true)
+    @testset "Testing SquareKagome" begin
+        testGeometry(SquareKagome.getMirrorSquareKagome(6))
+    end
 
-println("Testing SquareKagome")
-SquareKagome.getSquareKagome(6,test=true)
+    @testset "Testing SquareKagome" begin
+        testGeometry(SquareKagome.getSquareKagome(6))
+    end
 
-println("Testing SquareLattice")
-SquareLattice.getSquareLattice(6,test=true)
+    @testset "Testing SquareLattice" begin
+        testGeometry(SquareLattice.getSquareLattice(6))
+    end
 
-println("Testing Octochlore")
-Octochlore.getOctochlore(6,test=true)
+    @testset "Testing Octochlore" begin
+        testGeometry(Octochlore.getOctochlore(6))
+        testGeometry(Octochlore.getOctochloreGamma(6))
+    end
 
-println("Testing Honeycomb")
-Honeycomb.getHoneycomb(6,[1.,2.,3.,4.],test=true)
+    @testset "Testing Honeycomb" begin
+        testGeometry(Honeycomb.getHoneycomb(6,[1.,2.,3.,4.]))
+    end
 
-println("Testing Honeycomb")
-Honeycomb.getHoneycombGamma(6,alpha = 1., gamma = 0.3,test=true)
+    @testset "Testing Honeycomb" begin
+        testGeometry(Honeycomb.getHoneycombGamma(6,alpha = 1., gamma = 0.3))
+    end
 
-println("Testing TriangularLattice")
-TriangularLattice.getTriangularLattice(6,test=true)
+    @testset "Testing TriangularLattice" begin
+        testGeometry(TriangularLattice.getTriangularLattice(6))
+    end
+end
