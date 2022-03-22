@@ -77,22 +77,22 @@ function testGeometry(Geo::Geometry)
 end
 
 function testPairListSym(PairList::AbstractVector,Sym::Function)
-    warnings = true
+    nowarnings = true
     for R in PairList
         Rn = Sym(R)
-        (Rn in PairList && Rn != R) && (warnings = false; @warn "$R is symmetry reducible with $Rn")
+        (Rn in PairList && Rn != R) && (nowarnings = false; @warn "$R is symmetry reducible with $Rn")
     end
-    return warnings
+    return nowarnings
 end
 
 function testPairListSym(PairList::AbstractVector,Syms...)
-    warnings = true
+    nowarnings = true
     for Sym in Syms
         if !testPairListSym(PairList,Sym)
-            warnings = false
+            nowarnings = false
         end
     end
-    return warnings
+    return nowarnings
 end
 
 function checkSymmetries(PairList::Vector{RT},Sym::Function) where RT <: Rvec
