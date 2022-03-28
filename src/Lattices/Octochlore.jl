@@ -198,15 +198,17 @@ function getOctochlore(NLen,J=[1.,0.];test = false)
     return(System)
 end
 
-function getOctochloreGamma(NLen;beta = 0.5,gamma = 0.1,test = false)
+function getOctochloreGamma(NLen;alpha=1.,beta = 0.5,gamma = 0.1,test = false,normalize = true)
     System =  getOctochlore(NLen,[0.,0.])
     @unpack PairList,PairTypes,couplings = System
-    IneqCouplings = getInequivCouplings(1.,Float64(beta),Float64(gamma))
+    IneqCouplings = getInequivCouplings(Float64(alpha),Float64(beta),Float64(gamma))
     couplings .= mapCouplingsToSiteList(IneqCouplings,PairList)
-    couplings[System.OnsitePairs] .= 0.
-
-    largestCoupling = maximum(abs,couplings)
-    couplings ./= largestCoupling
+    
+    if normalize
+        couplings[System.OnsitePairs] .= 0.
+        largestCoupling = maximum(abs,couplings)
+        couplings ./= largestCoupling
+    end
     if test 
         testGeometry(System)
     end

@@ -128,14 +128,16 @@ module Honeycomb
         return StructArray(S1Terms)
     end
 
-    function getHoneycombGamma(NLen;alpha=1.,gamma=0.,test = false)
+    function getHoneycombGamma(NLen;alpha=1.,gamma=0.,test = false,normalize = true)
         System = getHoneycomb(NLen,[0.,0.])
         @unpack PairList,PairTypes,couplings = System
         IneqCouplings = getInequivCouplings(Float64(alpha),Float64(gamma))
         couplings .= 0.5 .*mapCouplingsToSiteList(IneqCouplings,PairList)
-        couplings[System.OnsitePairs] .= 0.
-        largestCoupling = maximum(abs,couplings)
-        couplings ./= largestCoupling
+        if normalize
+            couplings[System.OnsitePairs] .= 0.
+            largestCoupling = maximum(abs,couplings)
+            couplings ./= largestCoupling
+        end
         if test 
             testGeometry(System)
         end
