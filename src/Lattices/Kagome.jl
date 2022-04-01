@@ -53,10 +53,11 @@ module LargeKagomeLattice
 
     using Parameters,StaticArrays,Test
     using ..SpinFRGLattices
+    export getHalfMoonDimerKagomeLattice
     """Constructer for a square lattice basis"""
     function LargeKagomeBasis()
-        a1 = 2*SA[1,0] 
-        a2 = SA[1,√3]
+        a1 = 4*SA[1,0] 
+        a2 = 4*1/2*SA[1,√3]
         
         b1 = SA[0,0]
         b2 = 1/4 *a1
@@ -72,7 +73,7 @@ module LargeKagomeLattice
         b11 = 3/4 *a1 + 2/4*a2
         b12 = 2/4 *a1 + 3/4*a2
 
-        return Basis_Struct_2D(a1=a1,a2=a2,b=[b1,b2,b3,b4,b5,b6,b7,b8,b9,b10,b11,b12], NNdist = 0.5,SiteType = [1,2,2,2,1,2,2,2,1,1,1,1],refSites = [Rvec(0,0,1),Rvec(0,0,2)],NUnique = 2)
+        return Basis_Struct_2D(a1=a1,a2=a2,b=[b1,b2,b3,b4,b5,b6,b7,b8,b9,b10,b11,b12], NNdist = norm(b2),SiteType = [1,2,2,2,1,2,2,2,1,1,1,1],NUnique = 2)
     end
     const Basis = LargeKagomeBasis()
 
@@ -97,7 +98,7 @@ module LargeKagomeLattice
 
     inCorrectSubsector_0(R1::Rvec,R2::Rvec) = true
     """Pair to inequiv: Assumes no lattice symmetries"""
-    function pairToInequiv_0(Rk::Rvec,Rj::Rvec)
+    function pairToInequiv(Rk::Rvec,Rj::Rvec)
         while !(Rk.b in (1,2))
             Rk = C6(Rk)
             Rj = C6(Rj)
@@ -107,9 +108,10 @@ module LargeKagomeLattice
         return Rk, Rj #give the vector in correct subsector
     end
 
-    function getDimerKagomeLattice(NLen;J1_2,J1_3,J1_5,J1_9,J2_3,J2_4,J2_12,kwargs...)
-        Name = string("DimerKagomeLattice_NLen=",NLen)
-        System =  getLatticeGeometry(NLen,Name,pairToInequiv_0,inCorrectSubsector_0,Basis;kwargs...)
+
+    function getHalfMoonDimerKagomeLattice(NLen;J2, J3a, J1_2,J1_3,J1_5,J1_9,J2_3,J2_4,J2_12,kwargs...)
+        Name = string("HalfMoonDimerKagomeLattice_NLen=",NLen)
+        System =  getLatticeGeometry(NLen,Name,pairToInequiv,inCorrectSubsector_0,Basis;kwargs...)
 
         @unpack PairList,couplings,PairTypes = System
 
@@ -120,6 +122,20 @@ module LargeKagomeLattice
                 return setCoupling!(couplings,x,R,val,PairList,PairTypes)
             end
         end
+
+        #first and second nearest neighbors 
+        setNeighborCouplings!(couplings,[0,J2],PairList,PairTypes,Basis)
+        
+        #third nearest neighbors  J3a
+        setJ!(1,Rvec(0,0,4),J3a)
+        setJ!(1,Rvec(0,0,7),J3a)
+        setJ!(1,Rvec(-1,0,4),J3a)
+        setJ!(1,Rvec(0,-1,7),J3a)
+
+        setJ!(2,Rvec(0,0,5),J3a)
+        setJ!(2,Rvec(-1,0,11),J3a)
+        setJ!(2,Rvec(-1,0,5),J3a)
+        setJ!(2,Rvec(0,-1,11),J3a)
 
         setJ!(1,Rvec(0,0,2),J1_2)
         setJ!(1,Rvec(0,0,3),J1_3)
@@ -135,22 +151,35 @@ module LargeKagomeLattice
         return(System)
     end
 
-    getDimerKagomeLattice(NLen,J1,J2=-1,delta=0.01;kwargs...) = getDimerKagomeLattice(NLen,
+
+    getHalfMoonDimerKagomeLattice(NLen,J1,J1a=J1,J2=-1,J3a = J2,delta=0.01;kwargs...) = getHalfMoonDimerKagomeLattice(NLen,
+    J2 = J2,
+    J3a = J3a,
     J1_2=J1+delta,
-    J1_3=J2,
-    J1_5=J1,
-    J1_9=J1,
-    J2_3 = J1,
-    J2_4 = J1,
-    J2_12 = J2)
+    J1_3=J1a-delta,
+    J1_5=J1-delta,
+    J1_9=J1-delta,
+    J2_3 = J1-delta,
+    J2_4 = J1-delta,
+    J2_12 = J1a-delta;kwargs...)
+
 
     """Helper function for pretty plotting"""
     function bondColFunction(J::Real)
-        color = ifelse(J>0,:red,:blue)
+        color = :red
         label = string(round(J,digits = 2))
         if J <0
+            label = "\$J_{1a}\$"
+            color = :blue
+        elseif J == 0.25
+            label = "\$J_{3a}\$"
+            color = :darkgreen
+        elseif J ==0.5 
             label = "\$J_2\$"
-        elseif J > 0 && J <=1
+            color = :lightgreen
+        elseif J >0.5 && J<1 
+            label = "\$J_1- \\delta\$"
+        elseif J ==1 
             label = "\$J_1\$"
         elseif J > 1
             label = "\$J_1 + \\delta \$"
