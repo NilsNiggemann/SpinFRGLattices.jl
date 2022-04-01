@@ -16,3 +16,5 @@ include("Honeycomb.jl")
 export Honeycomb
 include("Triangular.jl")
 export TriangularLattice
+include("Kagome.jl")
+export LargeKagomeLattice

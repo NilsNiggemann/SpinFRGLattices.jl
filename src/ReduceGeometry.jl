@@ -227,7 +227,7 @@ end
 function getFRGComplexity(System::Geometry)
     s = 0
     for i in eachindex(System.Npairs)
-        s += System.Npairs[i] *O.Nsum[i]
+        s += System.Npairs[i] *System.Nsum[i]
     end
     return s
 end
