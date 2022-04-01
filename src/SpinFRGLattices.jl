@@ -1,7 +1,7 @@
 module SpinFRGLattices
 
 using Parameters,StaticArrays,StructArrays,Test
-version() = "0.3.7"
+version() = "0.3.8"
 
 include("GeometryEssentials.jl")
 
