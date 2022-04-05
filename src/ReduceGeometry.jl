@@ -236,7 +236,7 @@ end
 Function pairToInequiv must map two sites to a pair containing a reference site
 inCorrectSector maps a pair to true if it is symmetry inequivalent.
 """
-function getLatticeGeometry(NLen,Name,pairToInequiv::Function,inCorrectSector::Function,Basis;test = false,method= generatePairSites)
+function getLatticeGeometry(NLen,Name,pairToInequiv::Function,inCorrectSector::Function,Basis,dtype =Float64;test = false,method= generatePairSites)
     sortedpairs,sortedPairTypes = sortedPairList(NLen,Basis,method) # get sorted List of pairs for all reference sites
     
     AllSites = unique(sortedpairs) # get List of all sites that are included in the system
@@ -253,7 +253,7 @@ function getLatticeGeometry(NLen,Name,pairToInequiv::Function,inCorrectSector::F
     
     invpairs = [inversepair(Basis.refSites[x.xi],R,inequivalentPairs,PairTypes,Basis,pairToInequiv) for (x,R) in zip(PairTypes,inequivalentPairs)]
     
-    couplings = zeros(Npairs)
+    couplings = zeros(dtype,Npairs)
 
     System = Geometry(Name = Name, NLen = NLen,couplings = couplings,PairList = inequivalentPairs,invpairs = invpairs,siteSum = siteSum,PairTypes = PairTypes,NUnique = Basis.NUnique,OnsitePairs = OnsitePairs)
 

@@ -160,7 +160,7 @@ function getInequivCouplings(CoupList::AbstractVector{spinType},mapSubSec=mapToS
             push!(reducedList,spin(S.fac,S_red))
         else
             fac =  only(reducedList[position].fac)
-            @assert isapprox(S.fac - fac,0,atol = 1E-14) "Coupling $(S.fac) != $fac does not match symmetry"
+            @assert isapprox(S.fac - fac,0,atol = 1e-14) "Coupling $(S.fac) != $fac does not match symmetry"
         end
     end
     return reducedList
@@ -189,7 +189,7 @@ end
 
 function getOctochlore(NLen,J=[1.,0.];test = false)
     Name = string("Octochlore_NLen=",NLen)
-    System =  getLatticeGeometry(NLen,Name,pairToInequiv,isCorrectSubsector,Basis,test=false)
+    System =  getLatticeGeometry(NLen,Name,pairToInequiv,isCorrectSubsector,Basis,eltype(J),test=false)
     @unpack PairList,PairTypes,couplings = System
     setNeighborCouplings!(couplings,J,PairList,Basis)
     if test 
@@ -198,14 +198,14 @@ function getOctochlore(NLen,J=[1.,0.];test = false)
     return(System)
 end
 
-function getOctochloreGamma(NLen;alpha=1.,beta = 0.5,gamma = 0.1,test = false,normalize = true)
-    System =  getOctochlore(NLen,[0.,0.])
+function getOctochloreGamma(NLen;alpha::T=1.,beta::T = 0.5,gamma::T = 0.1,test = false,normalize = true) where T
+    System =  getOctochlore(NLen,[zero(T),zero(T)])
     @unpack PairList,PairTypes,couplings = System
-    IneqCouplings = getInequivCouplings(Float64(alpha),Float64(beta),Float64(gamma))
+    IneqCouplings = getInequivCouplings(alpha,beta,gamma)
     couplings .= mapCouplingsToSiteList(IneqCouplings,PairList)
     
     if normalize
-        couplings[System.OnsitePairs] .= 0.
+        couplings[System.OnsitePairs] .= zero(T)
         largestCoupling = maximum(abs,couplings)
         couplings ./= largestCoupling
     end
