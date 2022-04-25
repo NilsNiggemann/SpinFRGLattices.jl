@@ -186,7 +186,7 @@ end
 
 """Returns list of nearest neighbor pairs"""
 function getNN(R::Rvec_2D,Basis)
-    NN = []
+    NN = Rvec_2D[]
     for n1 in -1:1,n2 in -1:1,b in 1:Basis.NCell
         Rnew = Rvec_2D(R.n1+n1,R.n2+n2,b)
         if isapprox(dist(R,Rnew,Basis),Basis.NNdist,atol = 1E-10)
@@ -198,7 +198,7 @@ end
 
 """Returns list of nearest neighbor pairs"""
 function getNN(R::Rvec_3D,Basis)
-    NN = []
+    NN = Rvec_3D[]
     for n1 in -1:1,n2 in -1:1,n3 in -1:1, b in 1:Basis.NCell
         Rnew = Rvec_3D(R.n1+n1,R.n2+n2,R.n3+n3,b)
         if isapprox(dist(R,Rnew,Basis),Basis.NNdist,atol = 1E-10)
@@ -212,10 +212,10 @@ end
 Returns list of all pairs that are no more than N nearest neighbor pairs away from a specified reference site.
 Symmetries may then be applied by deleting equivalent elements from PairList.
 """
-function generatePairSites(N,Basis,refSite = Basis.refSites[1])
+function generatePairSites(N,Basis,refSite::Rtype = Basis.refSites[1]) where Rtype <: Rvec
     siteList = [refSite]
     PairList = [refSite]
-    CurrSiteList = []
+    CurrSiteList = Rtype[]
     for _ in 1:N # procedurally generate sites going to nearest neighbors in each step
         empty!(CurrSiteList)
         for R in siteList 
