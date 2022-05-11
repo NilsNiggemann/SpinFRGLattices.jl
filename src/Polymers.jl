@@ -20,7 +20,7 @@ function getPolymer(Nsites;coup = [0,1,0.5])
         end
     end
     #eliminate multiplicities
-    siteSum = Matrix{sumElements}(undef,Nsites,Npairs)
+    siteSum = fill!(Matrix{sumElements}(undef,Nsites,Npairs),sumElements(0,0,0,0))
 
     function numocc(obj,arr)
         m = 0
