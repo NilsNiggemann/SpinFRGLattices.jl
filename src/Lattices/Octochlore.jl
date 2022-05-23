@@ -169,11 +169,13 @@ function getInequivCouplings(α,β,γ)
     getInequivCouplings(reduceCouplings(getCouplingsToS1(α,β,γ)))
 end
 
+isNonVanishing(x::AbstractFloat) = abs(x)>eps(x)*100
+
 function mapCouplingsToSiteList(IneqCouplings,PairList,PairTypes = ones(length(PairList)))
     NonSetSites = StructArray(eltype(IneqCouplings)[])
-    couplings = zeros(length(PairList))
+    couplings = zeros(eltype(IneqCouplings.fac),length(PairList))
     for Spin in IneqCouplings
-        if abs(Spin.fac) > 1E-14
+        if isNonVanishing(Spin.fac)
             position = findall(x-> x==Spin.site,PairList)
             if isempty(position)
                 # setCoupling!(couplings,1,Spin.site,Spin.fac,PairList,PairTypes)
