@@ -240,10 +240,10 @@ function getLatticeGeometry(NLen,Name,pairToInequiv::Function,inCorrectSector::F
     sortedpairs,sortedPairTypes = sortedPairList(NLen,Basis,method) # get sorted List of pairs for all reference sites
     
     AllSites = unique(sortedpairs) # get List of all sites that are included in the system
-    Ntot = length(AllSites)
+    # Ntot = length(AllSites)
 
     inequivalentPairs,PairTypes = getinequivalentPairs(sortedpairs,sortedPairTypes, inCorrectSector, Basis) # remove symmetry equivalents
-    println("Total Number of sites: ",Ntot, "\t Num pairs: ", length(inequivalentPairs) )
+    # println("Total Number of sites: ",Ntot, "\t Num pairs: ", length(inequivalentPairs) )
 
     splits = CalcSiteSum(inequivalentPairs,AllSites,PairTypes,pairToInequiv,Basis)
     siteSum = reduceSiteSum(splits)
