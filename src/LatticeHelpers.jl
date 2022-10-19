@@ -2,7 +2,7 @@
 Functions and data types that can be used to construct Lattices.
 """
 
-export  Basis_Struct_2D, Basis_Struct_3D,Basis_Struct, Rvec_2D, Rvec_3D, Rvec, getLatticeVec, norm, translateToOrigin, translation, getCartesian, aboveLine, belowLine,aboveLine_strict, belowLine_strict, MirrorLine, dist, generatePairSites,generateLUnitCells
+export  Basis_Struct_2D, Basis_Struct_3D,Basis_Struct, Rvec_2D, Rvec_3D, Rvec, getLatticeVec, norm, translateToOrigin, translation, getCartesian, aboveLine, belowLine,aboveLine_strict, belowLine_strict, MirrorLine, dist, generatePairSites,generateLUnitCells,Mirror
 
 
 abstract type Rvec end
@@ -176,13 +176,12 @@ function MirrorLine(slope::Real,r::AbstractVector)
     l = SA[1,slope] # vector along line
     return 2* r' * l /(norm(l)^2) *l - r
 end
-function MirrorLine(slope::Real,R::Rvec_2D,Basis)
+function MirrorLine(slope::Real,R::Rvec_2D,Basis::Basis_Struct_2D)
     mirr(R) = MirrorLine(slope,R)
     Cart(R) = getCartesian(R,Basis)
     RV(r) = getRvec(r,Basis)
     return R |> Cart |> mirr |> RV
 end
-
 
 """Returns list of nearest neighbor pairs"""
 function getNN(R::Rvec_2D,Basis)
@@ -255,3 +254,18 @@ function generateLUnitCells(L,Basis::Basis_Struct_3D,refSite = Basis.refSites[1]
     end
     return PairList
 end
+
+
+function Mirror(r::AbstractArray,p1::SVector{2},p2::SVector{2})
+    A = p2[2] - p1[2]
+    B = -(p2[1] - p1[1])
+    C = -A*p1[1] - B*p1[2]
+    M = sqrt(A^2+B^2)
+    A,B,C = A/M,B/M,C/M
+    D = A*r[1] + B*r[2] + C
+    return SA[r[1] - 2*A*D,r[2] - 2*B*D]
+end
+Mirror(R::Rvec_2D,p1::SVector{2},p2::SVector{2},Basis::Basis_Struct_2D) = getRvec(Mirror(getCartesian(R,Basis),p1,p2),Basis)
+Mirror(R::Rvec_2D,p1::Rvec_2D,p2::Rvec_2D,Basis::Basis_Struct_2D) = getRvec(Mirror(getCartesian(R,Basis),getCartesian(p1,Basis),getCartesian(p2,Basis)),Basis)
+
+Mirror(r::AbstractArray,p1::SVector,p2::SVector) = error("Mirror not implemented for dim ≠ 2")

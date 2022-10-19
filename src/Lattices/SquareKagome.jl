@@ -124,9 +124,10 @@ module SquareKagome
     """
     Given a pair of sites Rk and Rj from a vertex, return a corresponding inequivalent pair R_new by using lattice symmetries. This means R_new is in an equivalent position to one of the reference sites x ∈ 1,2 Basis.NUnique as Rk is to Rj. (Rk,Rj) -> (Rx,R_new) 
     """
-    function pairToInequiv_0(Rk::Rvec_2D,Rj::Rvec_2D)
+
+    function pairToInequiv_0(Rk::Rvec_2D,Rj::Rvec_2D,Basis = Basis,C4 = C4)
         count = 1
-        while !(Rk.b in (1,2)) # sites 1 and 2 are the inequivalent reference sites
+        while !(Rk.b in getproperty.(Basis.refSites,:b)) # inequivalent reference sites
             #gloabel C4 rotations
             Rk = C4(Rk)
             Rj = C4(Rj)
