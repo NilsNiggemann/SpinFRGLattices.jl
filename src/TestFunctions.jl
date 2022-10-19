@@ -85,7 +85,7 @@ function testPairListSym(PairList::AbstractVector,Sym::Function)
     return nowarnings
 end
 
-function testPairListSym(PairList::AbstractVector,Syms...)
+function testPairListSym(PairList::AbstractVector,Syms)
     nowarnings = true
     for Sym in Syms
         if !testPairListSym(PairList,Sym)
@@ -102,7 +102,7 @@ function checkSymmetries(PairList::Vector{RT},Sym::Function) where RT <: Rvec
     return true
 end
 
-function checkSymmetries(PairList::Vector{RT},Syms...) where RT <: Rvec
+function checkSymmetries(PairList::Vector{RT},Syms) where RT <: Rvec
     for Sym in Syms
         checkSymmetries(PairList,Sym)
     end
