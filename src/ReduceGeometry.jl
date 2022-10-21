@@ -236,15 +236,18 @@ end
 Function pairToInequiv must map two sites to a pair containing a reference site
 inCorrectSector maps a pair to true if it is symmetry inequivalent.
 """
-function getLatticeGeometry(NLen,Name,pairToInequiv::Function,inCorrectSector::Function,Basis,dtype =Float64;test = false,method= generatePairSites)
+function getLatticeGeometry(NLen,Name,pairToInequiv::Function,inCorrectSector::Function,Basis,dtype=Float64;method= generatePairSites,kwargs...)
     sortedpairs,sortedPairTypes = sortedPairList(NLen,Basis,method) # get sorted List of pairs for all reference sites
     
     AllSites = unique(sortedpairs) # get List of all sites that are included in the system
-    # Ntot = length(AllSites)
 
     inequivalentPairs,PairTypes = getinequivalentPairs(sortedpairs,sortedPairTypes, inCorrectSector, Basis) # remove symmetry equivalents
-    # println("Total Number of sites: ",Ntot, "\t Num pairs: ", length(inequivalentPairs) )
 
+    getLatticeGeometry(NLen,Name,pairToInequiv::Function,AllSites,inequivalentPairs,PairTypes,Basis,dtype;kwargs...)
+
+end
+
+function getLatticeGeometry(NLen,Name,pairToInequiv::Function,AllSites,inequivalentPairs,PairTypes,Basis,dtype =Float64;test = false)
     splits = CalcSiteSum(inequivalentPairs,AllSites,PairTypes,pairToInequiv,Basis)
     siteSum = reduceSiteSum(splits)
     Npairs = size(siteSum,2)
