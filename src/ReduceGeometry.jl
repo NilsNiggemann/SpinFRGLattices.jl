@@ -1,4 +1,4 @@
-export MapToPair, setCoupling!,setNeighborCouplings!, getSiteType, testGeometry, getLatticeGeometry,getFRGComplexity
+export MapToPair, setCoupling!,setNeighborCouplings!, getSiteType, testGeometry, findSymmetryReduced, getLatticeGeometry,getFRGComplexity
 """Gives a sorted list of pairs for all reference sites together with a list which types of sites are paired"""
 function sortedPairList(N,Basis,method = generatePairSites)
     type = typeof(Basis.refSites[1])
@@ -232,6 +232,28 @@ function reduceSiteSum(siteSum)
     end
     return reducedSum[1:MaxNsum-1,:] #cut off unneded part, MaxNsum-1 because every part will definitely contain an empty split 
 end
+
+"""Returns a vector of indices with symmetry inequivalent pairs by applying all symmetries in Symmetrylist.
+function findSymmetryReduced(Sites::AbstractVector,Symmetrylist::AbstractVector{Function})
+returns 
+"""
+function findSymmetryReduced(Sites::AbstractVector,Symmetrylist::AbstractVector{Function})
+    UniqueSiteIndices = Int[]
+    for (i,site) in enumerate(Sites)
+        symsites = [S(site) for S in Symmetrylist::AbstractVector]
+        occurs = false
+        for s in symsites
+            if s in Sites[UniqueSiteIndices]
+                occurs = true
+                break
+            end
+        end
+        occurs || push!(UniqueSiteIndices,i)
+    end
+    UniqueSiteIndices
+end
+
+
 """Returns generalized Geometry struct after specification of System size, symmetry function and basis.
 Function pairToInequiv must map two sites to a pair containing a reference site
 inCorrectSector maps a pair to true if it is symmetry inequivalent.
