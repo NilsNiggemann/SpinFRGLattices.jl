@@ -1,4 +1,4 @@
-export MapToPair, setCoupling!,setNeighborCouplings!, getSiteType, testGeometry, findSymmetryReduced, getLatticeGeometry,getFRGComplexity
+export MapToPair, setCoupling!,setNeighborCouplings!, getSiteType, testGeometry, findSymmetryReduced, pairToInequiv_vec, getLatticeGeometry,getFRGComplexity
 """Gives a sorted list of pairs for all reference sites together with a list which types of sites are paired"""
 function sortedPairList(N,Basis,method = generatePairSites)
     type = typeof(Basis.refSites[1])
@@ -253,6 +253,27 @@ function findSymmetryReduced(Sites::AbstractVector,Symmetrylist::AbstractVector{
     UniqueSiteIndices
 end
 
+"""Converts a pair of sites Rk, and Rj to a pair such that Rk lies in the first unit cells. For this, translation symmetry is used as well as a list of symmetries can transforms reference sites into each other.
+"""
+function pairToRefSite(Rk::Rvec_3D,Rj::Rvec_3D,Basis::Basis_Struct,nonRefSymmetries)
+    for Sym in nonRefSymmetries
+        Rk.b in getproperty.(Basis.refSites,:b) && break
+        Rk = Sym(Rk)
+        Rj = Sym(Rj)
+    end
+    Rvec(0,0,0,Rk.b), translateToOrigin(Rj,Rk)
+end
+
+"""Converts a pair of sites Rk, and Rj to a symmetry inequivalent pair by applying the symmetries in nonRefSymmetries
+"""
+function pairToInequiv_vec(Rk::Rvec_3D,Rj::Rvec_3D,Basis::Basis_Struct,InequivPairs::AbstractVector{Rvec_3D},refSymmetries,nonRefSymmetries)
+    Rk,Rj = pairToRefSite(Rk,Rj,Basis,refSymmetries)
+    for s in nonRefSymmetries
+        Rjprime = s(Rj)::Rvec_3D
+        Rjprime in InequivPairs && return (Rk,Rjprime)
+    end
+    return Rk,Rj
+end
 
 """Returns generalized Geometry struct after specification of System size, symmetry function and basis.
 Function pairToInequiv must map two sites to a pair containing a reference site
