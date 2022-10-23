@@ -1,4 +1,4 @@
-export MapToPair, setCoupling!,setNeighborCouplings!, getSiteType, testGeometry, findSymmetryReduced, pairToInequiv_vec, getLatticeGeometry,getFRGComplexity
+export MapToPair, setCoupling!,setNeighborCouplings!, getSiteType, testGeometry, findSymmetryReduced, pairToInequiv_vec,generatePairToInequiv, getLatticeGeometry,getFRGComplexity
 """Gives a sorted list of pairs for all reference sites together with a list which types of sites are paired"""
 function sortedPairList(N,Basis,method = generatePairSites)
     type = typeof(Basis.refSites[1])
@@ -264,22 +264,26 @@ function pairToRefSite(Rk::Rvec_3D,Rj::Rvec_3D,Basis::Basis_Struct,nonRefSymmetr
     Rvec(0,0,0,Rk.b), translateToOrigin(Rj,Rk)
 end
 
-"""Converts a pair of sites Rk, and Rj to a symmetry inequivalent pair by applying the symmetries in nonRefSymmetries
+"""Converts a pair of sites Rk, and Rj to a symmetry inequivalent pair by first applying the symmetries in nonRefSymmetries to map Rk to a reference site and then refSymmetries to map to a symmetry reduced sector.
 """
-function pairToInequiv_vec(Rk::Rvec_3D,Rj::Rvec_3D,Basis::Basis_Struct,InequivPairs::AbstractVector{Rvec_3D},refSymmetries,nonRefSymmetries)
-    Rk,Rj = pairToRefSite(Rk,Rj,Basis,refSymmetries)
-    for s in nonRefSymmetries
-        Rjprime = s(Rj)::Rvec_3D
+function pairToInequiv_vec(Rk::Rvec,Rj::Rvec,Basis::Basis_Struct,InequivPairs::AbstractVector{<:Rvec},nonRefSymmetries,refSymmetries)
+    Rk,Rj = pairToRefSite(Rk,Rj,Basis,nonRefSymmetries)
+    for s in refSymmetries
+        Rjprime = s(Rj)
         Rjprime in InequivPairs && return (Rk,Rjprime)
     end
     return Rk,Rj
+end
+
+function generatePairToInequiv(InequivPairs::AbstractVector{<:Rvec},Basis::Basis_Struct,nonRefSymmetries,refSymmetries)
+    @inline pairToInequiv(R1::Rvec,R2::Rvec) = pairToInequiv_vec(R1,R2,Basis,InequivPairs,nonRefSymmetries,refSymmetries)
 end
 
 """Returns generalized Geometry struct after specification of System size, symmetry function and basis.
 Function pairToInequiv must map two sites to a pair containing a reference site
 inCorrectSector maps a pair to true if it is symmetry inequivalent.
 """
-function getLatticeGeometry(NLen,Name,pairToInequiv::Function,inCorrectSector::Function,Basis,dtype=Float64;method= generatePairSites,kwargs...)
+function getLatticeGeometry(NLen,Name,pairToInequiv::Function,inCorrectSector::Function,Basis::Basis_Struct,dtype=Float64;method= generatePairSites,kwargs...)
     sortedpairs,sortedPairTypes = sortedPairList(NLen,Basis,method) # get sorted List of pairs for all reference sites
     
     AllSites = unique(sortedpairs) # get List of all sites that are included in the system
@@ -290,7 +294,24 @@ function getLatticeGeometry(NLen,Name,pairToInequiv::Function,inCorrectSector::F
 
 end
 
-function getLatticeGeometry(NLen,Name,pairToInequiv::Function,AllSites,inequivalentPairs,PairTypes,Basis,dtype =Float64;test = false)
+function getLatticeGeometry(NLen,Name,Basis::Basis_Struct,nonRefSymmetries,refSymmetries,dtype =Float64;test = false)
+    sortedpairs,sortedPairTypes = SpinFRGLattices.sortedPairList(NLen,Basis)
+
+    AllSites = unique(sortedpairs)
+    inds = findSymmetryReduced(sortedpairs,refSymmetries)
+
+    inequivalentPairs = sortedpairs[inds]
+    PairTypes = sortedPairTypes[inds]
+
+    pairToInequiv = generatePairToInequiv(inequivalentPairs,Basis,nonRefSymmetries,refSymmetries)
+
+    System = getLatticeGeometry(NLen,Name,pairToInequiv,AllSites,inequivalentPairs,PairTypes,Basis,dtype)
+
+    test && testGeometry(System)
+    return(System)
+end
+
+function getLatticeGeometry(NLen,Name,pairToInequiv::Function,AllSites,inequivalentPairs,PairTypes,Basis::Basis_Struct,dtype =Float64;test = false)
     splits = CalcSiteSum(inequivalentPairs,AllSites,PairTypes,pairToInequiv,Basis)
     siteSum = reduceSiteSum(splits)
     Npairs = size(siteSum,2)
