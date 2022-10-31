@@ -237,7 +237,7 @@ end
 function findSymmetryReduced(Sites::AbstractVector,Symmetrylist::AbstractVector{Function})
 returns 
 """
-function findSymmetryReduced(Sites::AbstractVector,Symmetrylist::AbstractVector{Function})
+function findSymmetryReduced(Sites::AbstractVector{<:Rvec_3D},Symmetrylist::AbstractVector{<:Function})
     UniqueSiteIndices = Int[]
     for (i,site) in enumerate(Sites)
         symsites = [S(site) for S in Symmetrylist::AbstractVector]
