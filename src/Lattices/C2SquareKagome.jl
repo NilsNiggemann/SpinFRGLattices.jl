@@ -1,6 +1,6 @@
 
 module C2SquareKagome
-    using StaticArrays,Test,Parameters
+    using StaticArrays,Test
     using ..SpinFRGLattices
     export getC2DimerSquareKagome
     function LargeSquareKagomeBasis()
@@ -101,7 +101,7 @@ module C2SquareKagome
         deltaJ1Light,deltaJ1Dark,deltaJ2,deltaJ3 = deltaJ
         Name = string("C2DimerSquagome_NLen=",NLen)
         System = getLatticeGeometry(NLen,Name,pairToInequiv,inSector0,Basis,test=test)
-        @unpack couplings,PairList,PairTypes = System
+        (;couplings,PairList,PairTypes) = System
 
         function setJ!(x,R,val)
             #x is refSite number!

@@ -1,6 +1,6 @@
 ##
 module Pyrochlore
-    using Parameters,StaticArrays,Test
+    using StaticArrays,Test
     using ..SpinFRGLattices
     export getPyrochlore
     
@@ -30,7 +30,7 @@ module Pyrochlore
 
     """performs a C2 rotation on R"""
     function C2(R::Rvec_3D)
-        @unpack n1,n2,n3,b = R
+        (;n1,n2,n3,b) = R
         b = (2,1,4,3)[b] # C2 swaps b2 with b1 and b3 with b4
         return Rvec(-n1-n2-n3,n3,n2,b)
     end
@@ -46,7 +46,7 @@ module Pyrochlore
     inversion symmetry: may restrict to one half of space (separated by (111) plane)
     """
     function inPosHalf(R::Rvec_3D)
-        @unpack n1,n2,n3 = R
+        (;n1,n2,n3) = R
         return (n1+n2+n3>=0)
     end
 
@@ -169,7 +169,7 @@ module Pyrochlore
     function getPyrochlore(NLen,J = [1.,0.];test = false)
         Name = string("Pyrochlore_NLen=",NLen)
         System =  getLatticeGeometry(NLen,Name,pairToInequiv,inCorrectSubsector,Basis,test=test)
-        @unpack PairList,couplings = System
+        (;PairList,couplings) = System
         setNeighborCouplings!(couplings,J,PairList,Basis)
 
         return(System)

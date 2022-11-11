@@ -1,6 +1,6 @@
 module Octochlore
 using ..SpinFRGLattices
-using StaticArrays,Parameters,StructArrays
+using StaticArrays,StructArrays
 export getOctochlore,getOctochloreGamma
 
 function OctochloreBasis()
@@ -45,7 +45,6 @@ C4(R::Rvec) = getRvec(C4(getCartesian(R)))
 Symmetry: may restrict to section with z<=y<=x
 """
 function isCorrectSubsector(R_ref,R::Rvec)
-    # @unpack n1,n2,n3 = R
     x,y,z = getRefCartesian(R)
     return(x>= 0 && y>=0 && z >=0&& y>= z ) # todo basis!
 end
@@ -193,7 +192,7 @@ end
 function getOctochlore(NLen,J=[1.,0.];test = false)
     Name = string("Octochlore_NLen=",NLen)
     System =  getLatticeGeometry(NLen,Name,pairToInequiv,isCorrectSubsector,Basis,eltype(J),test=false)
-    @unpack PairList,PairTypes,couplings = System
+    (;PairList,couplings) = System
     setNeighborCouplings!(couplings,J,PairList,Basis)
     if test 
         testGeometry(System)
@@ -205,7 +204,7 @@ function getOctochloreGamma(NLen;alpha::Real=1.,beta::Real = 0.5,gamma::Real = 0
     alpha,beta,gamma = promote(alpha,beta,gamma)
     T = typeof(alpha)
     System =  getOctochlore(NLen,[zero(T),zero(T)])
-    @unpack PairList,PairTypes,couplings = System
+    (;PairList,couplings) = System
     IneqCouplings = getInequivCouplings(alpha,beta,gamma)
     couplings .= mapCouplingsToSiteList(IneqCouplings,PairList)
     

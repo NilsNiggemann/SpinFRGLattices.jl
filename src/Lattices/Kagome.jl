@@ -1,6 +1,5 @@
-# using SpinFRGLattices,FRGLatticePlotting,StaticArrays,Parameters
 module KagomeLattice
-    using Parameters,StaticArrays,Test
+    using StaticArrays,Test
     using ..SpinFRGLattices
     """Constructer for a square lattice basis"""
     function KagomeBasis()
@@ -51,7 +50,7 @@ end
 
 module LargeKagomeLattice
 
-    using Parameters,StaticArrays,Test
+    using StaticArrays,Test
     using ..SpinFRGLattices
     export getHalfMoonDimerKagomeLattice
     """Constructer for a square lattice basis"""
@@ -113,7 +112,7 @@ module LargeKagomeLattice
         Name = string("HalfMoonDimerKagomeLattice_NLen=",NLen)
         System =  getLatticeGeometry(NLen,Name,pairToInequiv,inCorrectSubsector_0,Basis;kwargs...)
 
-        @unpack PairList,couplings,PairTypes = System
+        (;PairList,couplings,PairTypes) = System
 
         function setJ!(x,R,val)
             if val !=0.

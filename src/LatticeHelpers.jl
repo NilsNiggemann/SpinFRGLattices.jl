@@ -29,7 +29,7 @@ abstract type Basis_Struct end
 """
 Basis of lattice
 """
-@with_kw struct Basis_Struct_2D <:Basis_Struct
+Base.@kwdef struct Basis_Struct_2D <:Basis_Struct
     a1::SVector{2,Float64} # lattice vector in cartesian coords
     a2::SVector{2,Float64}
     b::Vector{SVector{2, Float64}} # tuple of Basis vectors in cartesian coords
@@ -44,7 +44,7 @@ Basis of lattice
     refSites::Vector{Rvec_2D} = [Rvec_2D(0,0,i) for i in 1:NUnique] # It is advisable to set the reference sites to be the first within the basis
 end
 
-@with_kw struct Basis_Struct_3D <:Basis_Struct
+Base.@kwdef struct Basis_Struct_3D <:Basis_Struct
     a1::SVector{3,Float64} # lattice vector in cartesian coords
     a2::SVector{3,Float64}
     a3::SVector{3,Float64}

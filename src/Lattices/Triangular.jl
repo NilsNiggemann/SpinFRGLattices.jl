@@ -1,6 +1,6 @@
 ##
 module TriangularLattice
-    using Parameters,StaticArrays,Test
+    using StaticArrays,Test
     using ..SpinFRGLattices
     export getTriangularLattice
         
@@ -32,7 +32,7 @@ module TriangularLattice
     Mirror(x) = MirrorLine(1/sqrt(3),x,Basis)
 
     function inC6Sector(R::Rvec)
-        @unpack n1,n2 = R
+        (;n1,n2) = R
         n1 >= 0 && n2 >= 0
     end
     """
@@ -75,7 +75,7 @@ module TriangularLattice
         Name = string("TriangularLattice_NLen=",NLen)
         System =  getLatticeGeometry(NLen,Name,pairToInequiv,inCorrectSubsector,Basis;kwargs...)
 
-        @unpack PairList,couplings = System
+        (;PairList,couplings) = System
         setNeighborCouplings!(couplings,J,PairList,Basis)
         return(System)
     end

@@ -3,7 +3,7 @@ Module to generate Lattice properties for the Square Kagome Lattice within FRG
 """
 ##
 module SquareKagome
-    using StaticArrays,Test,Parameters
+    using StaticArrays,Test
     using ..SpinFRGLattices
     export getSquareKagome,getMirrorSquareKagome
     # "shuriken-like structure: Not used in main implementation"
@@ -151,7 +151,7 @@ module SquareKagome
     function getSquareKagome(NLen,J = (1.,1.,1.,0.);test = false)
         Name = string("Squagome_NLen=",NLen)
         System = getLatticeGeometry(NLen,Name,pairToInequiv,inSector1,Basis,test=test)
-        @unpack couplings,PairList,PairTypes = System
+        (;couplings,PairList,PairTypes) = System
 
         function setJ!(x,R,val)
             if val !=0.
@@ -261,7 +261,7 @@ module SquareKagome
     function getMirrorSquareKagome(NLen,J1=1,J2_J3=1,Jx=0;test = false)
         Name = string("MSquagome_NLen=",NLen)
         System = getLatticeGeometry(NLen,Name,MirrorpairToInequiv,inMirrorSector,Basis,test=test)
-        @unpack couplings,PairList,PairTypes = System
+        (;couplings,PairList,PairTypes) = System
 
         function setJ!(x,R,val)
             if val !=0.

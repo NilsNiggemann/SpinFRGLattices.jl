@@ -2,7 +2,7 @@ export testPairListSym
 
 function testGeometry(Geo::Geometry)
 
-    @unpack siteSum,Npairs,invpairs,couplings,OnsitePairs,NUnique,PairList,PairTypes = Geo
+    (;siteSum,Npairs,invpairs,couplings,OnsitePairs,NUnique,PairList,PairTypes) = Geo
     @testset "SiteSum" begin 
         for j in OnsitePairs
             for spl in siteSum[:,j]
@@ -12,7 +12,7 @@ function testGeometry(Geo::Geometry)
     end
     @testset "PairList" begin
         for (j,pair) in enumerate(PairList)
-            @unpack xi = PairTypes[j]
+            xi = PairTypes[j].xi
             @test MapToPair(xi,pair,PairList,PairTypes) == j # j must correspond to pair in PairList
         end
     end

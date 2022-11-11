@@ -1,6 +1,6 @@
 module Honeycomb
     using ..SpinFRGLattices
-    using StaticArrays,Parameters,StructArrays
+    using StaticArrays,StructArrays
     
     export getHoneycomb,getHoneycombGamma
     
@@ -85,7 +85,7 @@ module Honeycomb
         Name = string("Honeycomb_NLen=",NLen)
         System =  getLatticeGeometry(NLen,Name,pairToInequiv,inCorrectSubsector,Basis;kwargs...)
 
-        @unpack PairList,couplings = System
+        (;PairList,couplings) = System
         setNeighborCouplings!(couplings,J,PairList,Basis)
         return(System)
     end
@@ -130,7 +130,7 @@ module Honeycomb
 
     function getHoneycombGamma(NLen;alpha=1.,gamma=0.,test = false,normalize = true)
         System = getHoneycomb(NLen,[0.,0.])
-        @unpack PairList,PairTypes,couplings = System
+        (;PairList,couplings) = System
         IneqCouplings = getInequivCouplings(Float64(alpha),Float64(gamma))
         couplings .= 0.5 .*mapCouplingsToSiteList(IneqCouplings,PairList)
         if normalize

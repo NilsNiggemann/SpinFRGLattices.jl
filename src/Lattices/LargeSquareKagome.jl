@@ -3,7 +3,7 @@ Module to generate Lattice properties for the Square Kagome Lattice with enlarge
 """
 
 module LargeSquareKagome
-    using StaticArrays,Test,Parameters
+    using StaticArrays,Test
     using ..SpinFRGLattices
     export getDimerSquareKagome,getNoMirrDimerSquareKagome
         
@@ -153,7 +153,7 @@ module LargeSquareKagome
         end
         Name = string("DimerSquagome_NLen=",NLen)
         System = getLatticeGeometry(NLen,Name,pairToInequiv,inSector1,Basis,test=test)
-        @unpack couplings,PairList,PairTypes = System
+        (;couplings,PairList,PairTypes) = System
 
         function setJ!(x,R,val)
             if val !=0.
@@ -200,7 +200,7 @@ module LargeSquareKagome
         deltaJ1,deltaJ2,deltaJ3 = deltaJ
         Name = string("NoMirrDimerSquagome_NLen=",NLen)
         System = getLatticeGeometry(NLen,Name,pairToInequiv_0,inSector0,Basis,test=test)
-        @unpack couplings,PairList,PairTypes = System
+        (;couplings,PairList,PairTypes) = System
 
         function setJ!(x,R,val)
             if val !=0.
@@ -234,7 +234,7 @@ module LargeSquareKagome
 end
 
 module Loop6SquareKagome
-    using StaticArrays,Test,Parameters
+    using StaticArrays,Test
     import ..LargeSquareKagome as LSK
     using ..SpinFRGLattices
     export getLoop6SquareKagome
@@ -370,7 +370,7 @@ module Loop6SquareKagome
         J = 1.
         Name = string("Loop6Squagome_NLen=",NLen)
         System = getLatticeGeometry(NLen,Name,pairToInequiv,inSector,Basis,test=test)
-        @unpack couplings,PairList,PairTypes = System
+        (;couplings,PairList,PairTypes) = System
 
         function setJ!(x,R,val)
             if val !=0.

@@ -1,6 +1,6 @@
 ##
 module SquareLattice
-    using Parameters,StaticArrays,Test
+    using StaticArrays,Test
     using ..SpinFRGLattices
     export getSquareLattice
     
@@ -42,7 +42,7 @@ module SquareLattice
     Symmetry: may restrict to section with y<=x
     """
     function inCorrectSubsector(R_ref,R::Rvec)
-        @unpack n1,n2 = R
+        (;n1,n2) = R
         return(n1>= 0 && n2>=0 && n2 <=n1)
     end
 
@@ -85,7 +85,7 @@ module SquareLattice
         Name = string("SquareLattice_NLen=",NLen)
         System =  getLatticeGeometry(NLen,Name,pairToInequiv,inCorrectSubsector,Basis;kwargs...)
 
-        @unpack PairList,couplings = System
+        (;PairList,couplings) = System
         setNeighborCouplings!(couplings,J,PairList,Basis)
         return(System)
     end
