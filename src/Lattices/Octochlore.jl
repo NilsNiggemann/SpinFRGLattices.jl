@@ -170,6 +170,7 @@ function getInequivCouplings(α,β,γ)
 end
 
 isNonVanishing(x::AbstractFloat) = abs(x)>eps(x)*100
+isNonVanishing(x::Integer) = abs(x)>0
 
 function mapCouplingsToSiteList(IneqCouplings,PairList,PairTypes = ones(length(PairList)))
     NonSetSites = StructArray(eltype(IneqCouplings)[])
@@ -200,7 +201,9 @@ function getOctochlore(NLen,J=[1.,0.];test = false)
     return(System)
 end
 
-function getOctochloreGamma(NLen;alpha::T=1.,beta::T = 0.5,gamma::T = 0.1,test = false,normalize = true) where T
+function getOctochloreGamma(NLen;alpha::Real=1.,beta::Real = 0.5,gamma::Real = 0.1,test = false,normalize = true)
+    alpha,beta,gamma = promote(alpha,beta,gamma)
+    T = typeof(alpha)
     System =  getOctochlore(NLen,[zero(T),zero(T)])
     @unpack PairList,PairTypes,couplings = System
     IneqCouplings = getInequivCouplings(alpha,beta,gamma)
