@@ -48,6 +48,6 @@ function getPolymer(Nsites;coup = [0,1,0.5])
         coup = coup[1:Npairs]
     end
     couplings[1:length(coup)] = coup
-    Polymer = Geometry(Name = "$(Nsites)Polymer",couplings=couplings,PairList = collect(1:Npairs),siteSum=siteSum,NLen = Nsites)
+    Polymer = Geometry(Name = "$(Nsites)Polymer",couplings=couplings,PairList = [Rvec(0,0,i) for i in 1:Npairs],siteSum=siteSum,NLen = Nsites)
     return Polymer
 end
