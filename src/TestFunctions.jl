@@ -74,6 +74,7 @@ function testGeometry(Geo::Geometry)
         end
 
     end
+    # Todo: introduce test: Xii = sum_k V_ki V_ki P_kk. --> In site sums corresponding to onsite pairs, the only onsite pair that can appear is (i,i). If there are more than one inequivalent sites, the other pairs can not appear in this summation!
 end
 
 function testPairListSym(PairList::AbstractVector,Sym::Function)
