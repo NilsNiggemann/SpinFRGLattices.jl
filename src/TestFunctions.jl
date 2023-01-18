@@ -10,6 +10,9 @@ function testGeometry(Geo::Geometry)
             end
         end
     end
+    
+    testNsum(Geo)
+
     @testset "PairList" begin
         for (j,pair) in enumerate(PairList)
             xi = PairTypes[j].xi
@@ -75,7 +78,16 @@ function testGeometry(Geo::Geometry)
 
     end
     # Todo: introduce test: Xii = sum_k V_ki V_ki P_kk. --> In site sums corresponding to onsite pairs, the only onsite pair that can appear is (i,i). If there are more than one inequivalent sites, the other pairs can not appear in this summation!
+
+    testNsum(Geo)
 end
+
+function testNsum(Nsum,siteSum)
+    @testset "number of sum terms" begin
+        @test calcMaxpairs(siteSum) == Nsum
+    end
+end
+testNsum(G::Geometry) = testNsum(G.Nsum,G.siteSum)
 
 function testPairListSym(PairList::AbstractVector,Sym::Function)
     nowarnings = true
