@@ -2,7 +2,7 @@
 Functions and data types that can be used to construct Lattices.
 """
 
-export  Basis_Struct_2D, Basis_Struct_3D,Basis_Struct, Rvec_2D, Rvec_3D, Rvec, getLatticeVec, norm, translateToOrigin, translation, getCartesian, aboveLine, belowLine,aboveLine_strict, belowLine_strict, MirrorLine, dist, generatePairSites,generateLUnitCells,Mirror
+export  Basis_Struct_2D, Basis_Struct_3D,Basis_Struct, Rvec_2D, Rvec_3D, Rvec, getLatticeVec, norm, translateToOrigin, translation, getCartesian, aboveLine, belowLine,aboveLine_strict, belowLine_strict, MirrorLine, dist, generatePairSites,generateLUnitCells,Mirror,printPairs
 
 
 abstract type Rvec end

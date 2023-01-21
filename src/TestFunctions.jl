@@ -5,8 +5,8 @@ function testGeometry(Geo::Geometry)
     (;siteSum,Npairs,invpairs,couplings,OnsitePairs,NUnique,PairList,PairTypes) = Geo
     
     testSiteSum(siteSum,OnsitePairs)
-
-    testNsum(Geo)
+    testAllowedValues(siteSum,NUnique)
+    testOnsiteSum(siteSum,OnsitePairs)
 
     testPairList(PairList,PairTypes)
 
@@ -27,21 +27,6 @@ function testGeometry(Geo::Geometry)
         @test invpairs[OnsitePairs] == OnsitePairs # Test that OnsitePairs are their own inverse  
     end
 
-    @testset "Allowed values" begin
-        for spl in siteSum
-            if spl.ki != 0 || spl.kj != 0 || spl.xk != 0 || spl.xk != 0
-                @test spl.ki > 0
-                @test spl.kj > 0
-                @test spl.m > 0
-                @test spl.xk > 0
-            end
-            @test spl.xk <= NUnique
-
-            if spl.ki == 0 || spl.kj == 0 || spl.xk == 0
-                @test spl.m == 0
-            end
-        end
-    end
 
     symmetryWarning = "It is possible that some inequivalent pairs are missing or doubly accounted for!"
 
@@ -52,27 +37,37 @@ function testGeometry(Geo::Geometry)
             break
         end
     end
-
     for j in OnsitePairs
         j1cut = siteSum[:,j] #get site sum for onsite pairs ki = kj
-        inds =[s.ki for s in j1cut] #select ki elements
+        inds = j1cut.ki #select ki elements
         deleteat!(inds, findall(x->x==0,inds)) # remove 0
         OnsiteSum = sort(invpairs[inds])  # find inverse pairs ik
         for (i,x) in enumerate(OnsiteSum)
             if x != j-1 + i # If symmetries are fully incorporated, we expect each pair to appear once
-                @warn symmetryWarning
-                println(OnsiteSum)
-                return
+                @warn symmetryWarning x i j OnsitePairs inds
+                break
             end
         end
 
     end
-    # Todo: introduce test: Xii = sum_k V_ki V_ki P_kk. --> In site sums corresponding to onsite pairs, the only onsite pair that can appear is (i,i). If there are more than one inequivalent sites, the other pairs can not appear in this summation!
 
-    testNsum(Geo)
+end
+"""Xii = sum_k V_ki V_ki P_kk. --> In site sums corresponding to onsite pairs, the only onsite pair that can appear is (i,i). If there are more than one inequivalent sites, the other pairs can not appear in this summation!
+"""
+function testOnsiteSum(siteSum,OnsitePairs)
+    @testset "OnSiteSum" begin 
+        for j in OnsitePairs
+            for ki in siteSum[:,j].ki
+                if ki in OnsitePairs
+                    @test ki == j
+                end
+            end
+        end
+    end
 end
 
 function testSiteSum(siteSum,OnsitePairs)
+
     @testset "SiteSum" begin 
         for j in OnsitePairs
             for spl in siteSum[:,j]
@@ -80,6 +75,26 @@ function testSiteSum(siteSum,OnsitePairs)
             end
         end
     end
+end
+
+function testAllowedValues(siteSum,NUnique)
+    
+    @testset "Allowed values" begin
+        for spl in siteSum
+            if spl.ki != 0 || spl.kj != 0 || spl.xk != 0 || spl.xk != 0
+                @test spl.ki > 0
+                @test spl.kj > 0
+                @test spl.m > 0
+                @test spl.xk > 0
+            end
+            @test spl.xk <= NUnique
+
+            if 0 in (spl.ki, spl.kj, spl.xk)
+                @test spl.m == 0
+            end
+        end
+    end
+    
 end
 
 
