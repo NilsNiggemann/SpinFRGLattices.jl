@@ -3,22 +3,12 @@ export testPairListSym
 function testGeometry(Geo::Geometry)
 
     (;siteSum,Npairs,invpairs,couplings,OnsitePairs,NUnique,PairList,PairTypes) = Geo
-    @testset "SiteSum" begin 
-        for j in OnsitePairs
-            for spl in siteSum[:,j]
-                @test spl.ki == spl.kj
-            end
-        end
-    end
     
+    testSiteSum(siteSum,OnsitePairs)
+
     testNsum(Geo)
 
-    @testset "PairList" begin
-        for (j,pair) in enumerate(PairList)
-            xi = PairTypes[j].xi
-            @test MapToPair(xi,pair,PairList,PairTypes) == j # j must correspond to pair in PairList
-        end
-    end
+    testPairList(PairList,PairTypes)
 
     @testset "invpairs" begin
         for i in invpairs
@@ -82,12 +72,32 @@ function testGeometry(Geo::Geometry)
     testNsum(Geo)
 end
 
+function testSiteSum(siteSum,OnsitePairs)
+    @testset "SiteSum" begin 
+        for j in OnsitePairs
+            for spl in siteSum[:,j]
+                @test spl.ki == spl.kj
+            end
+        end
+    end
+end
+
+
 function testNsum(Nsum,siteSum)
     @testset "number of sum terms" begin
         @test calcMaxpairs(siteSum) == Nsum
     end
 end
 testNsum(G::Geometry) = testNsum(G.Nsum,G.siteSum)
+
+function testPairList(PairList,PairTypes)
+    @testset "PairList" begin
+        for (j,pair) in enumerate(PairList)
+            xi = PairTypes[j].xi
+            @test MapToPair(xi,pair,PairList,PairTypes) == j # j must correspond to pair in PairList
+        end
+    end
+end
 
 function testPairListSym(PairList::AbstractVector,Sym::Function)
     nowarnings = true

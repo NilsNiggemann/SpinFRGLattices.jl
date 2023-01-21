@@ -50,7 +50,7 @@ function Geometry(;
     couplings::AbstractVector,
     PairList::Vector{RvecDim},
     invpairs::Vector{Int} = collect(Int,1:Npairs),
-    NUnique::Int = 1,
+    NUnique::Int = length(OnsitePairs),
     PairTypes::Vector{sitePair} = [sitePair(1,1) for i in 1:Npairs],
     OnsitePairs::Vector{Int} = [1] 
 ) where RvecDim

@@ -269,3 +269,10 @@ Mirror(R::Rvec_2D,p1::SVector{2},p2::SVector{2},Basis::Basis_Struct_2D) = getRve
 Mirror(R::Rvec_2D,p1::Rvec_2D,p2::Rvec_2D,Basis::Basis_Struct_2D) = getRvec(Mirror(getCartesian(R,Basis),getCartesian(p1,Basis),getCartesian(p2,Basis)),Basis)
 
 Mirror(r::AbstractArray,p1::SVector,p2::SVector) = error("Mirror not implemented for dim ≠ 2")
+
+function printPairs(PairList,PairTypes)
+    for (i,(p,t)) in enumerate(zip(PairList,PairTypes))
+        println(i,":  ",t.xi ,"  →  ",p)
+    end
+end
+printPairs(Geometry) = printPairs(Geometry.PairList,Geometry.PairTypes)
