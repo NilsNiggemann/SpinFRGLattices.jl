@@ -50,9 +50,9 @@ function Geometry(;
     couplings::AbstractVector,
     PairList::Vector{RvecDim},
     invpairs::Vector{Int} = collect(Int,1:Npairs),
-    NUnique::Int = length(OnsitePairs),
     PairTypes::Vector{sitePair} = [sitePair(1,1) for i in 1:Npairs],
-    OnsitePairs::Vector{Int} = [1] 
+    OnsitePairs::Vector{Int} = [1] ,
+    NUnique::Int = length(OnsitePairs),
 ) where RvecDim
     return Geometry(Name,NLen,StructArray(siteSum),Npairs,Nsum,couplings,PairList,invpairs,NUnique,PairTypes,OnsitePairs)
 end

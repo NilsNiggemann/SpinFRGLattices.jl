@@ -41,13 +41,9 @@ function testGeometry(Geo::Geometry)
         j1cut = siteSum[:,j] #get site sum for onsite pairs ki = kj
         inds = j1cut.ki #select ki elements
         deleteat!(inds, findall(x->x==0,inds)) # remove 0
-        OnsiteSum = sort(invpairs[inds])  # find inverse pairs ik
-        for (i,x) in enumerate(OnsiteSum)
-            if x != j-1 + i # If symmetries are fully incorporated, we expect each pair to appear once
-                @warn symmetryWarning x i j OnsitePairs inds
-                break
-            end
-        end
+        OnsiteSum = sort(invpairs[inds])  # find inverse pairs -> We expect these terms to be of the form (Vi1,Vi2,Vi3,Vi4,...) with each inequiv pair appearing once
+        @test OnsiteSum == collect(OnsiteSum[1]:OnsiteSum[end])
+
 
     end
 
