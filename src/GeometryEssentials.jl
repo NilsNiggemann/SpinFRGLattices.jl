@@ -2,7 +2,6 @@
 Includes essentials for arbitrary Geometry 
 """
 
-export sumElements,sitePair,Geometry,getPolymer,ArrayForm
 """
 Struct that contains all relevant information about the site summation.
 Flow equations are of the form DV_ij = sum_k (V_ki V_kj S_k G_k) + V_ij V_ij S_i G_j 

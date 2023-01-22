@@ -47,3 +47,15 @@ using SpinFRGLattices,Test
         testGeometry(TriangularLattice.getTriangularLattice(6))
     end
 end
+
+function testOnsitePairAdapt()
+    @testset "adapt Onsite Pairs" begin
+        @test adaptOnsitePairs([1]) == [1]
+        @test adaptOnsitePairs([1,4]) == [1,5]
+        @test adaptOnsitePairs([1,8]) == [1,9]
+    end
+end
+testOnsitePairAdapt()
+
+S1 = LargeSquareKagome.getDimerSquareKagome(3)
+testPairListAdaptation(S1,LargeSquareKagome.Basis.NCell)

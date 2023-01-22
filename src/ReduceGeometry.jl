@@ -1,4 +1,3 @@
-export MapToPair, setCoupling!,setNeighborCouplings!, getSiteType, testGeometry, findSymmetryReduced, pairToInequiv_vec,generatePairToInequiv, getLatticeGeometry,getFRGComplexity
 """Gives a sorted list of pairs for all reference sites together with a list which types of sites are paired"""
 function sortedPairList(N,Basis,method = generatePairSites)
     type = typeof(Basis.refSites[1])

@@ -1,5 +1,3 @@
-export testPairListSym
-
 function testGeometry(Geo::Geometry)
 
     (;siteSum,Npairs,invpairs,couplings,OnsitePairs,NUnique,PairList,PairTypes) = Geo
@@ -141,4 +139,18 @@ function checkSymmetries(PairList::Vector{RT},Syms) where RT <: Rvec
         checkSymmetries(PairList,Sym)
     end
     return true
+end
+
+
+function testPairListAdaptation(G::Geometry,NCell::Int)
+    K = adaptPairs(G,NCell,0.)
+    @testset "test PairList Adaptation" begin
+        @test K.PairList[K.OnsitePairs] == G.PairList[G.OnsitePairs]
+        for i in eachindex(K.OnsitePairs,G.OnsitePairs)
+            @test K.PairList[K.OnsitePairs[i]+1] == createSatellite(G.PairList[G.OnsitePairs[i]],NCell+i)
+        end
+    end
+    @testset "test PairTypes" begin
+        @test K.PairTypes[K.OnsitePairs] == G.PairTypes[G.OnsitePairs]
+    end
 end
