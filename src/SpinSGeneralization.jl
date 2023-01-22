@@ -25,10 +25,11 @@ function SpinSSiteSummation!(S,ijprimes,OnsitePairs,M)
     sort!(S)
 end
 
-"""adapts vector containing onsite pairs by shifting the indices by one for each inequivalent satellite pair added"""
+"""Adapts vector containing onsite pairs by shifting the indices by one for each inequivalent satellite pair added"""
 adaptOnsitePairs(OnsitePairs) = [P + (i-1) for (i,P) in enumerate(OnsitePairs)]
 
-function adaptPairs(G::Geometry,NCell::Int,A::Real)
+"""Returns vectors containing information about inequivalent pairs after inserting a new pair after each onsite pair, to keep physical properties of the system, while also including additional copies of spins on each site coupled by a couplings strenght A."""
+function adaptPairs(G::Geometry,NCell::Int,A)
     (;PairList,PairTypes,OnsitePairs,invpairs,couplings) = G
     PairList_new = copy(PairList)
     PairTypes_new = copy(PairTypes)
@@ -46,7 +47,7 @@ function adaptPairs(G::Geometry,NCell::Int,A::Real)
         pt = PairTypes[ij]
         ijpr = OnsitePairs_new[i]
         insert!(PairTypes_new,ijpr+1,pt)
-        insert!(couplings_new,ijpr+1,A) 
+        insert!(couplings_new,ijpr+1,A[i]) 
     end
 
     ijprimes = mapPairsToNewList(PairList,PairTypes,PairList_new,PairTypes_new)
@@ -58,7 +59,12 @@ function adaptPairs(G::Geometry,NCell::Int,A::Real)
     return (;PairList = PairList_new,OnsitePairs = OnsitePairs_new,PairTypes = PairTypes_new,invpairs = invpairs_new,couplings = couplings_new,ijprimes)
 end
 
-function adaptForSpinS(G::Geometry,NCell::Integer,Spin::Real,A::Real)
+adaptPairs(G::Geometry,NCell::Int,A::Real) = adaptPairs(G,NCell,fill(A,length(Geometry.OnsitePairs)))
+
+"""Takes a geometry and returns another geometry that is generalized for higher spin quantum number, effectively multiplying the number of sites by 2S. A is the (typically ferromagnetic) coupling by aligning the copied spins to maximize total spin. The physical Spin-S solution is recovered in the limit A → -∞. 
+If there are several inequivalent sites, A may also be chosen as a vector with one component for each inequivalent site.
+"""
+function adaptForSpinS(G::Geometry,NCell::Integer,Spin::Real,A)
     M = NumberOfSiteCopies(Spin)
     M == 1 && return G
 
@@ -73,7 +79,7 @@ function adaptForSpinS(G::Geometry,NCell::Integer,Spin::Real,A::Real)
     
     # ijprimes = mapPairsToNewList(G.PairList,G.PairTypes,PairList,PairTypes)
 
-    for (ij,Rij) in enumerate(G.PairList)
+    for ij in eachindex(G.PairList)
         (;xi,xj) = G.PairTypes[ij]
 
         ijpr = ijprimes[ij]
