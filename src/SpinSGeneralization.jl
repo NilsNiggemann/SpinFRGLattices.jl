@@ -59,7 +59,7 @@ function adaptPairs(G::Geometry,NCell::Int,A)
     return (;PairList = PairList_new,OnsitePairs = OnsitePairs_new,PairTypes = PairTypes_new,invpairs = invpairs_new,couplings = couplings_new,ijprimes)
 end
 
-adaptPairs(G::Geometry,NCell::Int,A::Real) = adaptPairs(G,NCell,fill(A,length(Geometry.OnsitePairs)))
+adaptPairs(G::Geometry,NCell::Int,A::Real) = adaptPairs(G,NCell,fill(A,length(G.OnsitePairs)))
 
 """Takes a geometry and returns another geometry that is generalized for higher spin quantum number, effectively multiplying the number of sites by 2S. A is the (typically ferromagnetic) coupling by aligning the copied spins to maximize total spin. The physical Spin-S solution is recovered in the limit A → -∞. 
 If there are several inequivalent sites, A may also be chosen as a vector with one component for each inequivalent site.
