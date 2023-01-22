@@ -15,11 +15,12 @@ export  Basis_Struct_2D, Basis_Struct_3D,Basis_Struct, Rvec_2D, Rvec_3D, Rvec, g
 include("ReduceGeometry.jl")
 export MapToPair, setCoupling!, setNeighborCouplings!, getSiteType, testGeometry, findSymmetryReduced, pairToInequiv_vec,generatePairToInequiv, getLatticeGeometry, getFRGComplexity
 
-include("TestFunctions.jl")
-export testPairListSym
-
 include("SpinSGeneralization.jl")
 export adaptForSpinS
+
+include("TestFunctions.jl")
+export testPairListSym,testPairListAdaptation
+
 
 include("Lattices/Lattices.jl")
 

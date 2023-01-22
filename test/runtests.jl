@@ -50,9 +50,9 @@ end
 
 function testOnsitePairAdapt()
     @testset "adapt Onsite Pairs" begin
-        @test adaptOnsitePairs([1]) == [1]
-        @test adaptOnsitePairs([1,4]) == [1,5]
-        @test adaptOnsitePairs([1,8]) == [1,9]
+        @test SpinFRGLattices.adaptOnsitePairs([1]) == [1]
+        @test SpinFRGLattices.adaptOnsitePairs([1,4]) == [1,5]
+        @test SpinFRGLattices.adaptOnsitePairs([1,8]) == [1,9]
     end
 end
 testOnsitePairAdapt()
