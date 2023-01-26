@@ -67,7 +67,9 @@ If there are several inequivalent sites, A may also be chosen as a vector with o
 function adaptForSpinS(G::Geometry,NCell::Integer,Spin::Real,A)
     M = NumberOfSiteCopies(Spin)
     M == 1 && return G
-
+    if occursin("2S_",G.Name)
+        @error "Invalid geometry name: '2S_' is already reserved for spin-S generalization. Please do not try to modify a geometry that was already adapted for higher spins."
+    end
     (;PairList,OnsitePairs,PairTypes,invpairs,couplings,ijprimes) = adaptPairs(G,NCell,A)
 
     Npairs = G.Npairs + length(OnsitePairs) # one additional pair for each symmetry inequiv site
@@ -142,4 +144,22 @@ function adaptForSpinS(G::Geometry,NCell::Integer,Spin::Real,A)
     return Geometry(;Name,NLen,siteSum,Npairs,couplings,PairList,PairTypes,OnsitePairs,NUnique,invpairs)
 end
 
-
+"""Given a vector of susceptibilities for the spin-S generalized pairs and the indices of onsite pairs for the spin-1/2 model returns a vector of susceptibilities for the corresponding spin-S model."""
+function convertSusceptibilityToSpinS!(Chinew::AbstractVector,Chi::AbstractVector,Spin::Real,OnsitePairs_S12::AbstractVector)
+    M = NumberOfSiteCopies(Spin)
+    OnsitePairs_S = adaptOnsitePairs(OnsitePairs_S12)
+    intersitePairs = OnsitePairs_S .+1
+    for i in eachindex(Chinew,Chi)
+        if i in OnsitePairs_S
+            Chinew[i] = M *(Chi[i] + (M-1) * Chi[i+1])
+        elseif i in intersitePairs
+            Chinew[i] = NaN
+        else
+            Chinew[i] = M^2 .*Chi[i]
+        end
+    end 
+    deleteat!(Chinew,intersitePairs)
+    return Chinew
+end
+convertSusceptibilityToSpinS!(Chi::AbstractVector,Spin::Real,OnsitePairs_S12::AbstractVector) = convertSusceptibilityToSpinS!(Chi,Chi,Spin,OnsitePairs_S12)
+convertSusceptibilityToSpinS(Chi::AbstractVector,Spin::Real,OnsitePairs_S12::AbstractVector) = convertSusceptibilityToSpinS!(similar(Chi),Chi,Spin,OnsitePairs_S12)
