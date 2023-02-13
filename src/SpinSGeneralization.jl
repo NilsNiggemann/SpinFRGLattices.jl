@@ -147,6 +147,7 @@ end
 """Given a vector of susceptibilities for the spin-S generalized pairs and the indices of onsite pairs for the spin-1/2 model returns a vector of susceptibilities for the corresponding spin-S model."""
 function convertSusceptibilityToSpinS!(Chinew::AbstractVector,Chi::AbstractVector,Spin::Real,OnsitePairs_S12::AbstractVector)
     M = NumberOfSiteCopies(Spin)
+    M == 1 && return Chi
     OnsitePairs_S = adaptOnsitePairs(OnsitePairs_S12)
     intersitePairs = OnsitePairs_S .+1
     for i in eachindex(Chinew,Chi)
