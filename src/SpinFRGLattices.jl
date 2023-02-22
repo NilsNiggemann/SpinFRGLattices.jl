@@ -16,7 +16,7 @@ include("ReduceGeometry.jl")
 export MapToPair, setCoupling!, setNeighborCouplings!, getSiteType, testGeometry, findSymmetryReduced, pairToInequiv_vec,generatePairToInequiv, getLatticeGeometry, getFRGComplexity
 
 include("SpinSGeneralization.jl")
-export adaptForSpinS
+export adaptForSpinS,convertSusceptibilityToSpinS,convertSusceptibilityToSpinS!
 
 include("TestFunctions.jl")
 export testPairListSym,testPairListAdaptation
