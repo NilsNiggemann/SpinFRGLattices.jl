@@ -1,10 +1,18 @@
-build-job:
-  stage: build
-  script:
-    - julia --project=. -e 'using Pkg; Pkg.status();using SpinFRGLattices; Pkg.test()'
+default:
+  image: julia:latest
+  before_script:
+  - apt-get -qq update; apt-get -y --no-install-recommends install git qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools at-spi2-core libgtk-3-dev xauth xvfb gconf-gsettings-backend
+  - export GKSwstype="100"
+  - git clone https://github.com/junglegobs/TimeSeriesClustering.jl.git ./TimeSeriesClustering.jl/
+  - julia --project=test -e 'import Pkg; Pkg.build()' # build the package
 
-test-job1:
-  stage: test
+test:latest:
+  image: julia:latest
   script:
-    - echo "This job tests something"
+    - julia --project=@. -e "import Pkg; Pkg.test(; coverage=true)" # test the package
+  #  - julia --project=test/coverage -e 'import Pkg; Pkg.instantiate()' # Setup coverage environment
+  #  - julia --project=test/coverage test/coverage/coverage_summary.jl # run coverage summary
+  #coverage: '/Code coverage: \d+\.\d+/' # Regex expression to determine coverage
+  only:
+  - master
 
