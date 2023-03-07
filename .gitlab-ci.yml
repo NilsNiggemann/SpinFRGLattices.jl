@@ -35,12 +35,9 @@
 
 # Name a test and select an appropriate image.
 # images comes from Docker hub
-test:0.7:
-  image: julia:0.7
-  <<: *test_definition
 
-test:1.0:
-  image: julia:1.0
+test:1.8.5:
+  image: julia:1.8.5
   <<: *test_definition
 
 # Maybe you would like to test your package against the development branch:
@@ -57,22 +54,6 @@ test:1.0:
 # - Navigating to the `CI/CD Pipelines` settings of your project,
 # - Copying and pasting the default `Simplecov` regex example provided, i.e.,
 #   `\(\d+.\d+\%\) covered` in the `test coverage parsing` textfield.
-
-# Example documentation deployment
-pages:
-  image: julia:0.7
-  stage: deploy
-  script:
-    - apt-get update -qq && apt-get install -y git  # needed by Documenter
-    - julia -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("SpinFRGLattices");'  # rebuild Julia (can be put somewhere else I'm sure
-    - julia -e 'using Pkg; import SpinFRGLattices; Pkg.add("Documenter")'  # install Documenter
-    - julia --color=yes docs/make.jl  # make documentation
-    - mv docs/build public  # move to the directory picked up by Gitlab pages
-  artifacts:
-    paths:
-      - public
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # WARNING: This template is using the `julia` images from [Docker
 # Hub][3]. One can use custom Julia images and/or the official ones found
