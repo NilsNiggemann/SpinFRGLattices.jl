@@ -1,13 +1,11 @@
 default:
-  image: julia:latest
+  image: julia:1.8.5
   before_script:
-  - apt-get -qq update; apt-get -y --no-install-recommends install git qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools at-spi2-core libgtk-3-dev xauth xvfb gconf-gsettings-backend
-  - export GKSwstype="100"
-  - git clone https://github.com/junglegobs/TimeSeriesClustering.jl.git ./TimeSeriesClustering.jl/
+  - git clone git@gitlabph.physik.fu-berlin.de:julia-frg/SpinFRGLattices.jl.git 
   - julia --project=test -e 'import Pkg; Pkg.build()' # build the package
 
-test:latest:
-  image: julia:latest
+test:1.8.5:
+  image: julia:1.8.5
   script:
     - julia --project=@. -e "import Pkg; Pkg.test(; coverage=true)" # test the package
   #  - julia --project=test/coverage -e 'import Pkg; Pkg.instantiate()' # Setup coverage environment
