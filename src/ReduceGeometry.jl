@@ -294,7 +294,7 @@ function getLatticeGeometry(NLen,Name,pairToInequiv::Function,inCorrectSector::F
 end
 
 function getLatticeGeometry(NLen,Name,Basis::Basis_Struct,nonRefSymmetries,refSymmetries,dtype =Float64;test = false)
-    sortedpairs,sortedPairTypes = SpinFRGLattices.sortedPairList(NLen,Basis)
+    sortedpairs,sortedPairTypes = sortedPairList(NLen,Basis)
 
     AllSites = unique(sortedpairs)
     inds = findSymmetryReduced(sortedpairs,refSymmetries)
