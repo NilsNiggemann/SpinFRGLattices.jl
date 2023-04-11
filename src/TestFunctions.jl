@@ -45,7 +45,6 @@ function testGeometry(Geo::Geometry)
         OnsiteSum = sort(invpairs[inds])  # find inverse pairs -> We expect these terms to be of the form (Vi1,Vi2,Vi3,Vi4,...) with each inequiv pair appearing once
         @test OnsiteSum == collect(OnsiteSum[1]:OnsiteSum[end])
 
-
     end
 
 end

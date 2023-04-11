@@ -232,25 +232,42 @@ function reduceSiteSum(siteSum)
     return reducedSum[1:MaxNsum-1,:] #cut off unneded part, MaxNsum-1 because every part will definitely contain an empty split 
 end
 
+
 """Returns a vector of indices with symmetry inequivalent pairs by applying all symmetries in Symmetrylist.
-function findSymmetryReduced(Sites::AbstractVector,Symmetrylist::AbstractVector{Function})
-returns 
 """
-function findSymmetryReduced(Sites::AbstractVector{<:Rvec_3D},Symmetrylist::AbstractVector{<:Function})
-    UniqueSiteIndices = Int[]
-    for (i,site) in enumerate(Sites)
-        symsites = [S(site) for S in Symmetrylist::AbstractVector]
-        occurs = false
-        for s in symsites
-            if s in Sites[UniqueSiteIndices]
-                occurs = true
-                break
+function findSymmetryReduced(PairList::AbstractVector{<:Rvec_3D},PairTypes::AbstractVector{sitePair},refSyms::AbstractVector{<:AbstractVector})
+    NUnique = maximum(max(x.xi,x.xj) for x in PairTypes)
+    UniqueSites = [unique(PairList) for x in 1:NUnique]
+    
+    for x in 1:NUnique
+        for T in refSyms[x]
+            for site in UniqueSites[x]
+                s = T(site)
+                s == site && continue
+                inds = findall(==(s),UniqueSites[x])
+                deleteat!(UniqueSites[x],inds)
             end
         end
-        occurs || push!(UniqueSiteIndices,i)
     end
-    UniqueSiteIndices
+    keepInds = [
+        MapToPair(x,R,PairList,PairTypes)
+        for x in 1:NUnique for R in UniqueSites[x]
+    ]
+    unique!(keepInds)
+    filter!(!=(0),keepInds)
+    sort!(keepInds)
+    return keepInds
 end
+
+
+
+"""Given a vector of vectors return all elements in a single vector"""
+function flatten_nested(v::AbstractVector{<:AbstractVector})
+    return [x for vi in v for x in vi]
+end
+
+"""Fallback for only one inequiv site for backward compatibility"""
+findSymmetryReduced(PairList::AbstractVector{<:Rvec_3D},Symmetrylist::AbstractVector{<:Rvec}) = findSymmetryReduced(PairList,ones(length(PairList)),[Symmetrylist,])
 
 """Converts a pair of sites Rk, and Rj to a pair such that Rk lies in the first unit cells. For this, translation symmetry is used as well as a list of symmetries can transforms reference sites into each other.
 """
@@ -274,8 +291,24 @@ function pairToInequiv_vec(Rk::Rvec,Rj::Rvec,Basis::Basis_Struct,InequivPairs::A
     return Rk,Rj
 end
 
+function pairToInequiv_vec(Rk::Rvec,Rj::Rvec,Basis::Basis_Struct,InequivPairs::AbstractVector{<:Rvec},PairTypes::AbstractVector{sitePair},nonRefSymmetries,refSymmetries::AbstractVector{<:AbstractVector})
+    Rk,Rj = pairToRefSite(Rk,Rj,Basis,nonRefSymmetries)
+    x = getSiteType(Rk,Basis)
+    sym = refSymmetries[x]
+    for s in sym
+        Rjprime = s(Rj)
+        idx = MapToPair(x,Rjprime,InequivPairs,PairTypes) 
+        idx != 0 && return (Rk,Rjprime)
+    end
+    return Rk,Rj
+end
+
 function generatePairToInequiv(InequivPairs::AbstractVector{<:Rvec},Basis::Basis_Struct,nonRefSymmetries,refSymmetries)
     @inline pairToInequiv(R1::Rvec,R2::Rvec) = pairToInequiv_vec(R1,R2,Basis,InequivPairs,nonRefSymmetries,refSymmetries)
+end
+
+function generatePairToInequiv(InequivPairs::AbstractVector{<:Rvec},PairTypes::AbstractVector{sitePair},Basis::Basis_Struct,nonRefSymmetries,refSymmetries)
+    @inline pairToInequiv(R1::Rvec,R2::Rvec) = pairToInequiv_vec(R1,R2,Basis,InequivPairs,PairTypes,nonRefSymmetries,refSymmetries)
 end
 
 """Returns generalized Geometry struct after specification of System size, symmetry function and basis.
@@ -297,12 +330,12 @@ function getLatticeGeometry(NLen,Name,Basis::Basis_Struct,nonRefSymmetries,refSy
     sortedpairs,sortedPairTypes = sortedPairList(NLen,Basis)
 
     AllSites = unique(sortedpairs)
-    inds = findSymmetryReduced(sortedpairs,refSymmetries)
+    inds = findSymmetryReduced(sortedpairs,sortedPairTypes,refSymmetries)
 
     inequivalentPairs = sortedpairs[inds]
     PairTypes = sortedPairTypes[inds]
 
-    pairToInequiv = generatePairToInequiv(inequivalentPairs,Basis,nonRefSymmetries,refSymmetries)
+    pairToInequiv = generatePairToInequiv(inequivalentPairs,PairTypes,Basis,nonRefSymmetries,refSymmetries)
 
     System = getLatticeGeometry(NLen,Name,pairToInequiv,AllSites,inequivalentPairs,PairTypes,Basis,dtype)
 
