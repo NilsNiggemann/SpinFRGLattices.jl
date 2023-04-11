@@ -310,17 +310,29 @@ function getLatticeGeometry(NLen,Name,Basis::Basis_Struct,nonRefSymmetries,refSy
     return(System)
 end
 
+
+function findOnsitePairs(PairList,PairTypes,refSites)
+    OSP = Int[]
+    for (i,(R,T)) in enumerate(zip(PairList,PairTypes))
+        if R in refSites && T.xi == T.xj
+            push!(OSP,i)
+        end
+    end
+    return OSP
+end
+
 function getLatticeGeometry(NLen,Name,pairToInequiv::Function,AllSites,inequivalentPairs,PairTypes,Basis::Basis_Struct,dtype =Float64;test = false)
     splits = CalcSiteSum(inequivalentPairs,AllSites,PairTypes,pairToInequiv,Basis)
     siteSum = reduceSiteSum(splits)
     Npairs = size(siteSum,2)
     
-    OnsitePairs = unique(i -> PairTypes[i].xi, 1:Npairs)
     
     invpairs = [inversepair(Basis.refSites[x.xi],R,inequivalentPairs,PairTypes,Basis,pairToInequiv) for (x,R) in zip(PairTypes,inequivalentPairs)]
     
     couplings = zeros(dtype,Npairs)
 
+    OnsitePairs = findOnsitePairs(inequivalentPairs,PairTypes,Basis.refSites)
+    
     System = Geometry(Name = Name, NLen = NLen,couplings = couplings,PairList = inequivalentPairs,invpairs = invpairs,siteSum = siteSum,PairTypes = PairTypes,NUnique = Basis.NUnique,OnsitePairs = OnsitePairs)
 
     if test

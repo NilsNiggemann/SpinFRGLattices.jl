@@ -1,7 +1,7 @@
 function testGeometry(Geo::Geometry)
 
     (;siteSum,Npairs,invpairs,couplings,OnsitePairs,NUnique,PairList,PairTypes) = Geo
-    
+
     testSiteSum(siteSum,OnsitePairs)
     testAllowedValues(siteSum,NUnique)
     testOnsiteSum(siteSum,OnsitePairs)
@@ -19,8 +19,11 @@ function testGeometry(Geo::Geometry)
             @test isapprox(c, couplings[i],atol =eps(Float64))
         end
     end
-    
+            
     @testset "OnSitePairs" begin
+        
+        @test OnsitePairs == unique(i -> PairTypes[i].xi, 1:Npairs) #Convention: Onsite pairs are always the first pair for each ref site
+        @test PairTypes[OnsitePairs] == [sitePair(i,i) for i in 1:NUnique]
         @test length(OnsitePairs) == NUnique   
         @test invpairs[OnsitePairs] == OnsitePairs # Test that OnsitePairs are their own inverse  
     end
@@ -62,7 +65,7 @@ end
 
 function testSiteSum(siteSum,OnsitePairs)
 
-    @testset "SiteSum" begin 
+    @testset "SiteSum OnsitePairs" begin 
         for j in OnsitePairs
             for spl in siteSum[:,j]
                 @test spl.ki == spl.kj
@@ -72,7 +75,7 @@ function testSiteSum(siteSum,OnsitePairs)
 end
 
 function testAllowedValues(siteSum,NUnique)
-    
+
     @testset "Allowed values" begin
         for spl in siteSum
             if spl.ki != 0 || spl.kj != 0 || spl.xk != 0 || spl.xk != 0
