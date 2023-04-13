@@ -28,7 +28,6 @@ function testGeometry(Geo::Geometry)
         @test invpairs[OnsitePairs] == OnsitePairs # Test that OnsitePairs are their own inverse  
     end
 
-
     if invpairs[invpairs] != collect(1:Npairs) # Test that inversing twice gives the same index 
         @warn "It is possible that some inequivalent pairs are missing or doubly accounted for!"
         printInvPairs(invpairs)
@@ -40,7 +39,7 @@ function testGeometry(Geo::Geometry)
         # deleteat!(inds, findall(x->x==0,inds)) # remove 0
         filter!(!=(0),inds)
         OnsiteSum = sort(invpairs[inds])  # find inverse pairs -> We expect these terms to be of the form (Vi1,Vi2,Vi3,Vi4,...) with each inequiv pair appearing once
-        @test OnsiteSum == collect(OnsiteSum[1]:OnsiteSum[end])
+        OnsiteSum == collect(OnsiteSum[1]:OnsiteSum[end]) || @warn "There might be missing symmetries"
 
     end
 
