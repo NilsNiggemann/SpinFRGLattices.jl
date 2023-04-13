@@ -31,7 +31,7 @@ function testGeometry(Geo::Geometry)
 
     if invpairs[invpairs] != collect(1:Npairs) # Test that inversing twice gives the same index 
         @warn "It is possible that some inequivalent pairs are missing or doubly accounted for!"
-        println(invpairs[invpairs] ," != ", collect(1:Npairs))
+        printInvPairs(invpairs)
     end
 
     for j in OnsitePairs
@@ -157,5 +157,14 @@ end
 function testCouplings(couplings,invpairs)
     @testset "test couplings J_ij = J_ji" begin
         @test couplings[invpairs] ≈ couplings
+    end
+end
+
+function printInvPairs(invpairs;verbose = false)
+    println("(ij → invpairs[ij] → invpairs²[ij])")
+    for (i,j) in enumerate(invpairs)
+        isinvertible = invpairs[j] == i
+        color = isinvertible ? :normal : :red
+        (!isinvertible || verbose) && printstyled( i , " → ", j ," → ", invpairs[j],"\n";color)
     end
 end
