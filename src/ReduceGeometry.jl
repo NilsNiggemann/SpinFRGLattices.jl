@@ -50,6 +50,10 @@ function MapToPair(x::Integer,R::RT,PairList::AbstractVector{RT},PairTypes) wher
     # println("cannot map: ",R," to inequivalent pair. Not found in PairList for site ",x)
 end
 
+function getMapToPairDict(PairList,PairTypes)
+    Dict((PairTypes[i].xi,PairList[i]) => i for i in eachindex(PairList))
+end
+
 """Sets coupling between ref site x and R to val. To map from x and R to the corresponding pair, we need PairList and siteTypes"""
 function setCoupling!(couplings,x::Int,R::Rvec,val::Number,PairList,PairTypes)
     idx = MapToPair(x,R,PairList,PairTypes)
@@ -183,22 +187,24 @@ function CalcSiteSum(PairList,siteList,PairTypes,pairToInequiv::Function,Basis)
     
     Nsum = length(siteList)
     
-    pairs = fill!(Matrix{sumElements}(undef,Nsum,Npairs),sumElements(0,0,0,0)) # generate empty matrix
+    pairs = fill(sumElements(0,0,0,0),Nsum,Npairs) # generate empty matrix
 
     pairNumber_(R1,R2) = pairNumber(R1,R2,PairList,PairTypes,Basis,pairToInequiv)
+    pairNumberDict = Dict([ (R1,R2) => pairNumber_(R1,R2) for R1 in PairList for R2 in PairList]) # store the pair number of all possible pairs in a dictionary
+    filter!(x-> x.second != 0,pairNumberDict) # remove all pairs that are not in PairList
     Threads.@threads for j in eachindex(PairList) #lhs of flow eqs
         Rj = PairList[j]
         Ri = Basis.refSites[PairTypes[j].xi]  # current reference site
         for (k,Rk) in enumerate(siteList)
-            ki_pair = pairNumber_(Rk,Ri) # maps vertex V_ki to appropriate pair in PairList
-            
-            kj_pair = pairNumber_(Rk,Rj)
-            
-            if ki_pair != 0 && kj_pair != 0
-                pairs[k,j]= sumElements(ki_pair,kj_pair,1,getSiteType(Rk,Basis))
-            else
-                pairs[k,j]= sumElements(0,0,0,0)
+            if (Rk,Ri) ∉ keys(pairNumberDict) || (Rk,Rj) ∉ keys(pairNumberDict)
+                continue
             end
+
+            ki_pair = pairNumberDict[(Rk,Ri)] # maps vertex V_ki to appropriate pair in PairList
+            
+            kj_pair = pairNumberDict[(Rk,Rj)]
+
+            pairs[k,j]= sumElements(ki_pair,kj_pair,1,getSiteType(Rk,Basis))
         end
 
     end
@@ -212,7 +218,7 @@ function reduceSiteSum(siteSum)
     # pairs = CalcSiteSum(L,PairList,sitetypes)
 
     Nsum,Npairs = size(siteSum)
-    reducedSum = fill!(Matrix{sumElements}(undef,Nsum+1,Npairs),sumElements(0,0,0,0)) #add +1 to Nsum to always have a (0,0,0,0) sumElements so we can always cut off last index!
+    reducedSum = fill(sumElements(0,0,0,0),Nsum+1,Npairs) #add +1 to Nsum to always have a (0,0,0,0) sumElements so we can always cut off last index!
     MaxNsum = 1
     Threads.@threads for j in 1:Npairs
         jSumList = sort( @view siteSum[:,j])
@@ -285,33 +291,20 @@ end
 
 """Converts a pair of sites Rk, and Rj to a symmetry inequivalent pair by first applying the symmetries in nonRefSymmetries to map Rk to a reference site and then refSymmetries to map to a symmetry reduced sector.
 """
-function pairToInequiv_vec(Rk::Rvec,Rj::Rvec,Basis::Basis_Struct,InequivPairs::AbstractVector{<:Rvec},nonRefSymmetries,refSymmetries)
-    Rk,Rj = pairToRefSite(Rk,Rj,Basis,nonRefSymmetries)
-    for s in refSymmetries
-        Rjprime = s(Rj)
-        Rjprime in InequivPairs && return (Rk,Rjprime)
-    end
-    return Rk,Rj
-end
-
-function pairToInequiv_vec(Rk::Rvec,Rj::Rvec,Basis::Basis_Struct,InequivPairs::AbstractVector{<:Rvec},PairTypes::AbstractVector{sitePair},nonRefSymmetries,refSymmetries::AbstractVector{<:AbstractVector})
+function pairToInequiv_vec(Rk::Rvec,Rj::Rvec,Basis::Basis_Struct,MapToPairDict::AbstractDict,nonRefSymmetries,refSymmetries::AbstractVector{<:AbstractVector})
     Rk,Rj = pairToRefSite(Rk,Rj,Basis,nonRefSymmetries)
     x = getSiteType(Rk,Basis)
     sym = refSymmetries[x]
     for s in sym
         Rjprime = s(Rj)
-        idx = MapToPair(x,Rjprime,InequivPairs,PairTypes) 
-        idx != 0 && return (Rk,Rjprime)
+        (x,Rjprime) in keys(MapToPairDict) && return (Rk,Rjprime)
     end
     return Rk,Rj
 end
 
-function generatePairToInequiv(InequivPairs::AbstractVector{<:Rvec},Basis::Basis_Struct,nonRefSymmetries,refSymmetries)
-    @inline pairToInequiv(R1::Rvec,R2::Rvec) = pairToInequiv_vec(R1,R2,Basis,InequivPairs,nonRefSymmetries,refSymmetries)
-end
-
 function generatePairToInequiv(InequivPairs::AbstractVector{<:Rvec},PairTypes::AbstractVector{sitePair},Basis::Basis_Struct,nonRefSymmetries,refSymmetries)
-    @inline pairToInequiv(R1::Rvec,R2::Rvec) = pairToInequiv_vec(R1,R2,Basis,InequivPairs,PairTypes,nonRefSymmetries,refSymmetries)
+    MapToPairDict = getMapToPairDict(InequivPairs,PairTypes)
+    @inline pairToInequiv(R1::Rvec,R2::Rvec) = pairToInequiv_vec(R1,R2,Basis,MapToPairDict,nonRefSymmetries,refSymmetries)
 end
 
 """Returns generalized Geometry struct after specification of System size, symmetry function and basis.
