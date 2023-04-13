@@ -1,7 +1,7 @@
 function testGeometry(Geo::Geometry)
 
     (;siteSum,Npairs,invpairs,couplings,OnsitePairs,NUnique,PairList,PairTypes) = Geo
-
+    testCouplings(couplings,Npairs)
     testSiteSum(siteSum,OnsitePairs)
     testAllowedValues(siteSum,NUnique)
     testOnsiteSum(siteSum,OnsitePairs)
@@ -29,19 +29,16 @@ function testGeometry(Geo::Geometry)
     end
 
 
-    symmetryWarning = "It is possible that some inequivalent pairs are missing or doubly accounted for!"
-
-    for j in 1:Npairs
-        if invpairs[invpairs[j]] != j # Test that inversing twice gives the same index 
-            @warn symmetryWarning
-            println(invpairs[invpairs] ," != ", invpairs)
-            break
-        end
+    if invpairs[invpairs] != collect(1:Npairs) # Test that inversing twice gives the same index 
+        @warn "It is possible that some inequivalent pairs are missing or doubly accounted for!"
+        println(invpairs[invpairs] ," != ", collect(1:Npairs))
     end
+
     for j in OnsitePairs
         j1cut = siteSum[:,j] #get site sum for onsite pairs ki = kj
         inds = j1cut.ki #select ki elements
-        deleteat!(inds, findall(x->x==0,inds)) # remove 0
+        # deleteat!(inds, findall(x->x==0,inds)) # remove 0
+        filter!(!=(0),inds)
         OnsiteSum = sort(invpairs[inds])  # find inverse pairs -> We expect these terms to be of the form (Vi1,Vi2,Vi3,Vi4,...) with each inequiv pair appearing once
         @test OnsiteSum == collect(OnsiteSum[1]:OnsiteSum[end])
 
@@ -154,5 +151,11 @@ function testPairListAdaptation(G::Geometry,NCell::Int)
     end
     @testset "test PairTypes" begin
         @test K.PairTypes[K.OnsitePairs] == G.PairTypes[G.OnsitePairs]
+    end
+end
+
+function testCouplings(couplings,invpairs)
+    @testset "test couplings J_ij = J_ji" begin
+        @test couplings[invpairs] == couplings
     end
 end
