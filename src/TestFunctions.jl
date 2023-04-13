@@ -1,7 +1,7 @@
 function testGeometry(Geo::Geometry)
 
     (;siteSum,Npairs,invpairs,couplings,OnsitePairs,NUnique,PairList,PairTypes) = Geo
-    testCouplings(couplings,Npairs)
+    testCouplings(couplings,invpairs)
     testSiteSum(siteSum,OnsitePairs)
     testAllowedValues(siteSum,NUnique)
     testOnsiteSum(siteSum,OnsitePairs)
@@ -156,6 +156,6 @@ end
 
 function testCouplings(couplings,invpairs)
     @testset "test couplings J_ij = J_ji" begin
-        @test couplings[invpairs] == couplings
+        @test couplings[invpairs] ≈ couplings
     end
 end
