@@ -211,6 +211,7 @@ Symmetries may then be applied by deleting equivalent elements from PairList.
 """
 function generatePairSites(N,Basis,refSite::Rtype = Basis.refSites[1]) where Rtype <: Rvec
     siteList = [refSite]
+    PairSet = Set([refSite]) #we use a set to generate sites a bit faster but write them to a list to preserve order
     PairList = [refSite]
     CurrSiteList = Rtype[]
     for _ in 1:N # procedurally generate sites going to nearest neighbors in each step
@@ -218,8 +219,9 @@ function generatePairSites(N,Basis,refSite::Rtype = Basis.refSites[1]) where Rty
         for R in siteList 
             NN = getNN(R,Basis) #find all nearest neighbors
             for R_nn in NN
-                if !(R_nn in PairList) #site has to be not already in the list
+                if !(R_nn in PairSet) #site has to be not already in the list
                     push!(CurrSiteList,R_nn)
+                    push!(PairSet,R_nn)
                     push!(PairList,R_nn)
                 end
             end
