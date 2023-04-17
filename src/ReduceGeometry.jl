@@ -276,18 +276,23 @@ end
 
 """Returns a vector of indices with symmetry inequivalent pairs by applying all symmetries in Symmetrylist.
 """
-function findSymmetryReduced(PairList::AbstractVector{<:Rvec_3D},PairTypes::AbstractVector{sitePair},refSyms::AbstractVector{<:AbstractVector})
+function findSymmetryReduced(PairList::AbstractVector{RV},PairTypes::AbstractVector{sitePair},refSyms::AbstractVector{<:AbstractVector}) where {RV<:Rvec}
+    _tuple(R::RV) = Tuple(getproperty(R,x) for x in fieldnames(typeof(R)))
+    lt(R1,R2) = _tuple(R1) < _tuple(R2)
+    # orderInds = sortperm(PairList,lt = (R1,R2) -> _tuple(R1) < _tuple(R2))
+    uniquePairs = unique(PairList)
     NUnique = maximum(max(x.xi,x.xj) for x in PairTypes)
-    UniqueSites = [unique(PairList) for x in 1:NUnique]
-    
+    UniqueSites = [ empty(PairList) for x in 1:NUnique]
+    siteBuffer = empty(PairList)
     for x in 1:NUnique
-        for T in refSyms[x]
-            for site in UniqueSites[x]
-                s = T(site)
-                s == site && continue
-                inds = findall(==(s),UniqueSites[x])
-                deleteat!(UniqueSites[x],inds)
+        for site in uniquePairs
+            push!(siteBuffer,site)
+            for T in refSyms[x]
+                push!(siteBuffer,T(site))
             end
+            sort!(siteBuffer,lt=lt)
+            push!(UniqueSites[x], siteBuffer[begin]) 
+            empty!(siteBuffer)
         end
     end
     keepInds = [
@@ -340,8 +345,9 @@ function pairToInequiv_vec(Rk::Rvec,Rj::Rvec,Basis::Basis_Struct,MapToPairDict::
     x = getSiteType(Rk,Basis)
 
     # allNonRefSymmetries = lazyiterator(nonRefSymmetries, refSymmetries...)
-    allNonRefSymmetries = nonRefSymmetries
-    # allNonRefSymmetries = lazyiterator(nonRefSymmetries, (refSymmetries[i] for i in eachindex(refSymmetries) if i != x)...)
+    # allNonRefSymmetries = nonRefSymmetries
+    allNonRefSymmetries = lazyiterator(nonRefSymmetries, (refSymmetries[i] for i in eachindex(refSymmetries) if i != x)...)
+
     Rk,Rj = pairToRefSite(Rk,Rj,Basis,allNonRefSymmetries)
     x = getSiteType(Rk,Basis)
     sym = refSymmetries[x]
@@ -377,6 +383,25 @@ function getLatticeGeometry(NLen,Name,pairToInequiv::Function,inCorrectSector::F
 
 end
 
+function getLatticeGeometry(NLen,Name,pairToInequiv::Union{<:Tuple,<:Function},AllSites,inequivalentPairs,PairTypes,Basis::Basis_Struct,dtype =Float64;test = false)
+    splits = CalcSiteSum(inequivalentPairs,PairTypes,AllSites,pairToInequiv,Basis)
+    siteSum = reduceSiteSum(splits)
+    Npairs = size(siteSum,2)
+    
+    invpairs = [inversepair(Basis.refSites[x.xi],R,inequivalentPairs,PairTypes,Basis,pairToInequiv) for (x,R) in zip(PairTypes,inequivalentPairs)]
+    
+    couplings = zeros(dtype,Npairs)
+
+    OnsitePairs = findOnsitePairs(inequivalentPairs,PairTypes,Basis.refSites)
+    
+    System = Geometry(Name = Name, NLen = NLen,couplings = couplings,PairList = inequivalentPairs,invpairs = invpairs,siteSum = siteSum,PairTypes = PairTypes,NUnique = Basis.NUnique,OnsitePairs = OnsitePairs)
+
+    if test
+        testGeometry(System)
+    end
+    return(System)
+end
+
 function getLatticeGeometry(NLen,Name,Basis::Basis_Struct,nonRefSymmetries,refSymmetries,dtype =Float64;test = false,method)
     sortedpairs,sortedPairTypes = sortedPairList(NLen,Basis,method)
 
@@ -405,26 +430,6 @@ function getLatticeGeometry(NLen,Name,Basis::Basis_Struct,nonRefSymmetries,refSy
     return(System)
 end
 
-
-
-function getLatticeGeometry(NLen,Name,pairToInequiv::Union{<:Tuple,<:Function},AllSites,inequivalentPairs,PairTypes,Basis::Basis_Struct,dtype =Float64;test = false)
-    splits = CalcSiteSum(inequivalentPairs,PairTypes,AllSites,pairToInequiv,Basis)
-    siteSum = reduceSiteSum(splits)
-    Npairs = size(siteSum,2)
-    
-    invpairs = [inversepair(Basis.refSites[x.xi],R,inequivalentPairs,PairTypes,Basis,pairToInequiv) for (x,R) in zip(PairTypes,inequivalentPairs)]
-    
-    couplings = zeros(dtype,Npairs)
-
-    OnsitePairs = findOnsitePairs(inequivalentPairs,PairTypes,Basis.refSites)
-    
-    System = Geometry(Name = Name, NLen = NLen,couplings = couplings,PairList = inequivalentPairs,invpairs = invpairs,siteSum = siteSum,PairTypes = PairTypes,NUnique = Basis.NUnique,OnsitePairs = OnsitePairs)
-
-    if test
-        testGeometry(System)
-    end
-    return(System)
-end
 
 function findOnsitePairs(PairList,PairTypes,refSites)
     OSP = Int[]
