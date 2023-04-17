@@ -107,8 +107,6 @@ end
     
 """Returns 2D or 3D vector in lattice coordinates"""
 function getLatticeVec(r::StaticArray,Basis)::StaticArray
-    # println(@allocated Basis.T*r)
-    # println(@allocated SA[1. 0. 1.; 0. 1. 1.; 0. 1. 1.]*r)
     return Basis.T*r
 end
 """Given a lattice vector returns a 2D or 3D vector in lattice coordinates"""
