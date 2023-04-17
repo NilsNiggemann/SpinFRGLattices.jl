@@ -313,7 +313,8 @@ findSymmetryReduced(PairList::AbstractVector{<:Rvec_3D},Symmetrylist::AbstractVe
 """Converts a pair of sites Rk, and Rj to a pair such that Rk lies in the first unit cells. For this, translation symmetry is used as well as a list of symmetries can transforms reference sites into each other.
 """
 function pairToRefSite(Rk::Rvec_3D,Rj::Rvec_3D,Basis::Basis_Struct,nonRefSymmetries)
-    refSites_b = getproperty.(Basis.refSites,:b)
+    # refSites_b = getproperty.(Basis.refSites,:b)
+    refSites_b = (R.b for R in Basis.refSites)
     Rk´ = Rk
     Rj´ = Rj
     for Sym in nonRefSymmetries
