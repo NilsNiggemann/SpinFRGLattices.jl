@@ -111,3 +111,12 @@ testOnsitePairAdapt()
 
 S1 = LargeSquareKagome.getDimerSquareKagome(3)
 testPairListAdaptation(S1,LargeSquareKagome.Basis.NCell)
+
+"""taking a vector of ints find a hash of the vector"""
+function hashVector(v::Vector{Int64})
+    hash = 0
+    for i in v
+        hash += i
+    end
+    return hash
+end
