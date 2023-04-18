@@ -402,7 +402,7 @@ function getLatticeGeometry(NLen,Name,pairToInequiv::Union{<:Tuple,<:Function},A
     return(System)
 end
 
-function getLatticeGeometry(NLen,Name,Basis::Basis_Struct,nonRefSymmetries,refSymmetries,dtype =Float64;test = false,method)
+function getLatticeGeometry(NLen,Name,Basis::Basis_Struct,nonRefSymmetries,refSymmetries,dtype =Float64;test = false,method = generatePairSites)
     sortedpairs,sortedPairTypes = sortedPairList(NLen,Basis,method)
 
     AllSites = unique(sortedpairs)
