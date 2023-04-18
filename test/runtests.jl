@@ -22,7 +22,7 @@ using SpinFRGLattices,Test
         @testset "Testing PairList indices 13:23" begin
             @test SK.PairList[13:23] == exemplary_PairList_i_13_23
         end
-        testGeometry(SK)
+
     end
 
     @testset "Testing LargeSquareKagome" begin
@@ -59,6 +59,18 @@ using SpinFRGLattices,Test
         @testset "Testing PairList indices 15:28" begin
             @test SK.PairList[15:28] == exemplary_PairList_i_15_28
         end
+
+        @testset "Checksums" begin
+            @test sum(SK.siteSum.ki) == 2052810
+
+            @test sum(SK.siteSum.kj) == 2052810
+
+            @test sum(SK.siteSum.xk) == 39639
+
+            @test sum(SK.siteSum.m) == 24980
+
+        end
+        testGeometry(SK)
         testGeometry(SK)
     end
 
