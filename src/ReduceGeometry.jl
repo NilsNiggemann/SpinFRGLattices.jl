@@ -317,24 +317,28 @@ findSymmetryReduced(PairList::AbstractVector{<:Rvec_3D},Symmetrylist::AbstractVe
 
 """Converts a pair of sites Rk, and Rj to a pair such that Rk lies in the first unit cells. For this, translation symmetry is used as well as a list of symmetries can transforms reference sites into each other.
 """
-function pairToRefSite(Rk::Rvec_3D,Rj::Rvec_3D,Basis::Basis_Struct,nonRefSymmetries)
+function pairToRefSite(Rk::Rvec_3D,Rj::Rvec_3D,Basis::Basis_Struct,nonRefSymmetries,refSymmetries)
     # refSites_b = getproperty.(Basis.refSites,:b)
     refSites_b = (R.b for R in Basis.refSites)
     Rk´ = Rk
     Rj´ = Rj
-    for Sym in nonRefSymmetries
-        Rk´.b ∈ refSites_b && break
-        Rk´ = Sym(Rk)
-        Rj´ = Sym(Rj)
-    end
+    x = getSiteType(Rk,Basis)
 
-    if Rk´.b ∈ refSites_b
-        return Rvec(0,0,0,Rk´.b),translateToOrigin(Rj´,Rk´)
+    for SymList in (nonRefSymmetries,refSymmetries...)
+
+        SymList === refSymmetries[x] && continue
+
+        for Sym in SymList
+            Rk´.b ∈ refSites_b && return Rvec(0,0,0,Rk´.b),translateToOrigin(Rj´,Rk´)
+            Rk´ = Sym(Rk)
+            Rj´ = Sym(Rj)
+        end
     end
 
     for s in nonRefSymmetries
         println(s(Rk))
     end
+
     error("Could not find reference site for pair $(Rk),$(Rj)!")
 end
 
@@ -345,11 +349,8 @@ end
 function pairToInequiv_vec(Rk::Rvec,Rj::Rvec,Basis::Basis_Struct,MapToPairDict::AbstractDict,nonRefSymmetries,refSymmetries::AbstractVector{<:AbstractVector})
     x = getSiteType(Rk,Basis)
 
-    # allNonRefSymmetries = lazyiterator(nonRefSymmetries, refSymmetries...)
-    # allNonRefSymmetries = nonRefSymmetries
-    allNonRefSymmetries = lazyiterator(nonRefSymmetries, (refSymmetries[i] for i in eachindex(refSymmetries) if i != x)...)
+    Rk,Rj = pairToRefSite(Rk,Rj,Basis,nonRefSymmetries,refSymmetries)
 
-    Rk,Rj = pairToRefSite(Rk,Rj,Basis,allNonRefSymmetries)
     x = getSiteType(Rk,Basis)
     sym = refSymmetries[x]
     for s in sym
@@ -357,11 +358,6 @@ function pairToInequiv_vec(Rk::Rvec,Rj::Rvec,Basis::Basis_Struct,MapToPairDict::
         (x,Rjprime) in keys(MapToPairDict) && return (Rk,Rjprime)
     end
     return Rk,Rj
-end
-
-"""given a variable number of arrays, returns a lazy iterator over all elements"""
-function lazyiterator(arrs...)
-    (el for arr in arrs for el in arr)
 end
 
 function generatePairToInequiv(InequivPairs::AbstractVector{<:Rvec},PairTypes::AbstractVector{sitePair},Basis::Basis_Struct,nonRefSymmetries,refSymmetries)
