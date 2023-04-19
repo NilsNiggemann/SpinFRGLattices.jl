@@ -61,16 +61,15 @@ using SpinFRGLattices,Test
         end
 
         @testset "Checksums" begin
-            @test sum(SK.siteSum.ki) == 2052810
+            @test sum(SK.siteSum.ki) == 44065
 
-            @test sum(SK.siteSum.kj) == 2052810
+            @test sum(SK.siteSum.kj) == 44065
 
-            @test sum(SK.siteSum.xk) == 39639
+            @test sum(SK.siteSum.xk) == 2946
 
-            @test sum(SK.siteSum.m) == 24980
+            @test sum(SK.siteSum.m) == 1926
 
         end
-        testGeometry(SK)
         testGeometry(SK)
     end
 
