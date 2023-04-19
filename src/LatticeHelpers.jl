@@ -58,13 +58,6 @@ Base.@kwdef struct Basis_Struct_3D <:Basis_Struct
     refSites::Vector{Rvec_3D}  =  [Rvec_3D(0,0,0,i) for i in 1:NUnique]
 end
 
-# printing form
-# Base.show(io::IO, ::MIME"text/plain", R::Rvec_2D) = print(io,"[",R.n1,", ",R.n2,"]_",R.b)
-# Base.show(io::IO, R::Rvec_2D) = print(io,"[",R.n1,", ",R.n2,"]_",R.b)
-
-# Base.show(io::IO, ::MIME"text/plain", R::Rvec_3D) = print(io,"[",R.n1,", ",R.n2,", ",R.n3,"]_",R.b)
-# Base.show(io::IO, R::Rvec_3D) = print(io,"[",R.n1,", ",R.n2,", ",R.n3,"]_",R.b)
-
 """Lazy constructor"""
 function Rvec(n1,n2,b)
     return Rvec_2D(n1,n2,b)
@@ -74,6 +67,9 @@ end
 function Rvec(n1,n2,n3,b)
     return Rvec_3D(n1,n2,n3,b)
 end
+
+convertToTuple(R::Rvec_2D) = (R.n1,R.n2,R.b)
+convertToTuple(R::Rvec_3D) = (R.n1,R.n2,R.n3,R.b)
 
 """Get Type of site according to unique pairs"""
 function getSiteType(R::Rvec,Basis)

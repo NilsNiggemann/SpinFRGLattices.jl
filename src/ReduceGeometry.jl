@@ -277,9 +277,8 @@ end
 """Returns a vector of indices with symmetry inequivalent pairs by applying all symmetries in Symmetrylist.
 """
 function findSymmetryReduced(PairList::AbstractVector{RV},PairTypes::AbstractVector{sitePair},refSyms::AbstractVector{<:AbstractVector}) where {RV<:Rvec}
-    _tuple(R::RV) = Tuple(getproperty(R,x) for x in fieldnames(typeof(R)))
-    lt(R1,R2) = _tuple(R1) < _tuple(R2)
-    # orderInds = sortperm(PairList,lt = (R1,R2) -> _tuple(R1) < _tuple(R2))
+    lt(R1,R2) = convertToTuple(R1) < convertToTuple(R2)
+
     uniquePairs = unique(PairList)
     NUnique = maximum(max(x.xi,x.xj) for x in PairTypes)
     UniqueSites = [ empty(PairList) for x in 1:NUnique]
@@ -317,7 +316,7 @@ findSymmetryReduced(PairList::AbstractVector{<:Rvec_3D},Symmetrylist::AbstractVe
 
 """Converts a pair of sites Rk, and Rj to a pair such that Rk lies in the first unit cells. For this, translation symmetry is used as well as a list of symmetries can transforms reference sites into each other.
 """
-function pairToRefSite(Rk::Rvec_3D,Rj::Rvec_3D,Basis::Basis_Struct,nonRefSymmetries,refSymmetries)
+function pairToRefSite(Rk::Rvec_3D,Rj::Rvec_3D,Basis::Basis_Struct,nonRefSymmetries::AbstractVector{T},refSymmetries::AbstractVector{<:AbstractVector{T}}) where T
     # refSites_b = getproperty.(Basis.refSites,:b)
     refSites_b = (R.b for R in Basis.refSites)
     Rk´ = Rk
