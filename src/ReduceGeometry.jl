@@ -181,17 +181,17 @@ function pairNumber(R1::R,R2::R,mapToPairDict::AbstractDict,nonRefSyms,refSyms,B
     return 0
 end
 
-function generatePairNumberDict(PairList,PairTypes,nonRefSyms,refSyms,Basis)
+function generatePairNumberDict(siteList,PairList,PairTypes,nonRefSyms,refSyms,Basis)
     MapToPairDict = getMapToPairDict(PairList,PairTypes)
-    pairNumberDict = Dict((R1,R2) => pairNumber(R1,R2,MapToPairDict,nonRefSyms,refSyms,Basis) for R1 in PairList for R2 in PairList)
+    pairNumberDict = Dict((R1,R2) => pairNumber(R1,R2,MapToPairDict,nonRefSyms,refSyms,Basis) for R1 in siteList for R2 in siteList)
     filter!(x-> x.second != 0,pairNumberDict) # remove all pairs that are not in PairList
     return pairNumberDict
 end
 
 """This function is for backwards compatibility. It is recommended to use the function with the same name that uses the mapToPairDict instead of the pairToInequiv function"""
-function generatePairNumberDict(PairList,PairTypes,pairToInequiv::Function,Basis)
+function generatePairNumberDict(siteList,PairList,PairTypes,pairToInequiv::Function,Basis)
     pairNumber_(R1,R2) = pairNumber(R1,R2,PairList,PairTypes,Basis,pairToInequiv)
-    pairNumberDict = Dict([ (R1,R2) => pairNumber_(R1,R2) for R1 in PairList for R2 in PairList]) # store the pair number of all possible pairs in a dictionary
+    pairNumberDict = Dict([ (R1,R2) => pairNumber_(R1,R2) for R1 in siteList for R2 in siteList]) # store the pair number of all possible pairs in a dictionary
     filter!(x-> x.second != 0,pairNumberDict) # remove all pairs that are not in PairList
 
     return pairNumberDict
@@ -209,14 +209,14 @@ It is assumed that our reference sites are the first in the basis!
 """
 function CalcSiteSum(PairList::AbstractVector{<:Rvec},PairTypes::AbstractVector{sitePair},siteList::AbstractVector{<:Rvec},pairToInequiv::Function,Basis::Basis_Struct)
     pairNumber_(R1,R2) = pairNumber(R1,R2,PairList,PairTypes,Basis,pairToInequiv)
-    pairNumberDict = Dict([ (R1,R2) => pairNumber_(R1,R2) for R1 in PairList for R2 in PairList]) # store the pair number of all possible pairs in a dictionary
+    pairNumberDict = Dict([ (R1,R2) => pairNumber_(R1,R2) for R1 in siteList for R2 in PairList]) # store the pair number of all possible pairs in a dictionary
     filter!(x-> x.second != 0,pairNumberDict) # remove all pairs that are not in PairList
     return CalcSiteSum(PairList,PairTypes,siteList,pairNumberDict,Basis)
 end
 
 function CalcSiteSum(PairList::AbstractVector{<:Rvec},PairTypes::AbstractVector{sitePair},siteList::AbstractVector{<:Rvec},syms::Tuple,Basis::Basis_Struct)
     (nonRefSyms,refSyms) = syms
-    pairNumberDict = generatePairNumberDict(PairList,PairTypes,nonRefSyms,refSyms,Basis)
+    pairNumberDict = generatePairNumberDict(siteList,PairList,PairTypes,nonRefSyms,refSyms,Basis)
     return CalcSiteSum(PairList,PairTypes,siteList,pairNumberDict,Basis)
 end
 
@@ -329,8 +329,9 @@ function pairToRefSite(Rk::Rvec_3D,Rj::Rvec_3D,Basis::Basis_Struct,nonRefSymmetr
     end
 
     if Rk´.b ∈ refSites_b
-        return Rvec(0,0,0,Rk.b),translateToOrigin(Rj,Rk)
+        return Rvec(0,0,0,Rk´.b),translateToOrigin(Rj´,Rk´)
     end
+
     for s in nonRefSymmetries
         println(s(Rk))
     end
@@ -411,7 +412,8 @@ function getLatticeGeometry(NLen,Name,Basis::Basis_Struct,nonRefSymmetries,refSy
     inequivalentPairs = sortedpairs[inds]
     PairTypes = sortedPairTypes[inds]
 
-    pairNumberDict = generatePairNumberDict(inequivalentPairs,PairTypes,nonRefSymmetries,refSymmetries,Basis)
+    pairNumberDict = generatePairNumberDict(AllSites,inequivalentPairs,PairTypes,nonRefSymmetries,refSymmetries,Basis)
+
     splits = CalcSiteSum(inequivalentPairs,PairTypes,AllSites,pairNumberDict,Basis)
     siteSum = reduceSiteSum(splits)
     Npairs = size(siteSum,2)
