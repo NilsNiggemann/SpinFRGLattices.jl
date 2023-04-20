@@ -327,16 +327,11 @@ findSymmetryReduced(PairList::AbstractVector{<:Rvec_3D},Symmetrylist::AbstractVe
 """Converts a pair of sites Rk, and Rj to a pair such that Rk lies in the first unit cells. For this, translation symmetry is used as well as a list of symmetries can transforms reference sites into each other.
 """
 function pairToRefSite(Rk::Rvec_3D,Rj::Rvec_3D,Basis::Basis_Struct,nonRefSymmetries::AbstractVector{T},refSymmetries::AbstractVector{<:AbstractVector{T}}) where T
-    # refSites_b = getproperty.(Basis.refSites,:b)
     refSites_b = (R.b for R in Basis.refSites)
     Rk´ = Rk
     Rj´ = Rj
-    x = getSiteType(Rk,Basis)
-
     for SymList in (nonRefSymmetries,refSymmetries...)
-
-        SymList === refSymmetries[x] && continue
-
+        
         for Sym in SymList
             Rk´.b ∈ refSites_b && return Rvec(0,0,0,Rk´.b),translateToOrigin(Rj´,Rk´)
             Rk´ = Sym(Rk)
@@ -436,6 +431,22 @@ function getLatticeGeometry(NLen,Name,Basis::Basis_Struct,nonRefSymmetries,refSy
     end
     return(System)
 end
+
+"""return all neccessary information about reduced lattice
+"""
+function generateReducedLattice(NLen,Basis::Basis_Struct,nonRefSymmetries,refSymmetries;method = generatePairSites)
+    sortedpairs,sortedPairTypes = sortedPairList(NLen,Basis,method)
+    AllSites = unique(sortedpairs)
+    inds = findSymmetryReduced(sortedpairs,sortedPairTypes,refSymmetries)
+    
+    PairList = sortedpairs[inds]
+    PairTypes = sortedPairTypes[inds]
+    pairNumberDict = generatePairNumberDict(AllSites,PairList,PairTypes,nonRefSymmetries,refSymmetries,Basis)
+    return pairNumberDict
+
+    return (;pairNumberDict,PairList,PairTypes)
+end
+
 
 
 function findOnsitePairs(PairList,PairTypes,refSites)
