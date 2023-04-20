@@ -181,9 +181,9 @@ function pairNumber(R1::R,R2::R,mapToPairDict::AbstractDict,nonRefSyms,refSyms,B
     return 0
 end
 
-function generatePairNumberDict(siteList1,siteList2,PairList,PairTypes,nonRefSyms,refSyms,Basis)
+function generatePairNumberDict(siteList1::AbstractVector{R},siteList2::AbstractVector{R},PairList::AbstractVector{R},PairTypes,nonRefSyms,refSyms,Basis) where {R<:Rvec}
     MapToPairDict = getMapToPairDict(PairList,PairTypes)
-    pairNumberDict = Dict((R1,R2) => pairNumber(R1,R2,MapToPairDict,nonRefSyms,refSyms,Basis) for R1 in siteList1 for R2 in siteList2)
+    pairNumberDict = Dict{Tuple{R,R},Int}((R1,R2) => pairNumber(R1,R2,MapToPairDict,nonRefSyms,refSyms,Basis) for R1 in siteList1 for R2 in siteList2)
     filter!(x-> x.second != 0,pairNumberDict) # remove all pairs that are not in PairList
     return pairNumberDict
 end
@@ -326,16 +326,24 @@ findSymmetryReduced(PairList::AbstractVector{<:Rvec_3D},Symmetrylist::AbstractVe
 
 """Converts a pair of sites Rk, and Rj to a pair such that Rk lies in the first unit cells. For this, translation symmetry is used as well as a list of symmetries can transforms reference sites into each other.
 """
-function pairToRefSite(Rk::Rvec_3D,Rj::Rvec_3D,Basis::Basis_Struct,nonRefSymmetries::AbstractVector{T},refSymmetries::AbstractVector{<:AbstractVector{T}}) where T
+function pairToRefSite(Rk::Rvec_3D,Rj::Rvec_3D,Basis::Basis_Struct,nonRefSymmetries::A,refSymmetries::AbstractVector{<:A}) where {A<:AbstractVector{T} where T}
     refSites_b = (R.b for R in Basis.refSites)
+    # check if Rk  is already in first unit cell
+    Rk.b ∈ refSites_b && return Rvec(0,0,0,Rk.b),translateToOrigin(Rj,Rk)
+
     Rk´ = Rk
-    Rj´ = Rj
-    for SymList in (nonRefSymmetries,refSymmetries...)
-        
+
+    for Sym in nonRefSymmetries
+        Rk´ = Sym(Rk)
+        Rk´.b ∈ refSites_b && return Rvec(0,0,0,Rk´.b),translateToOrigin(Sym(Rj),Rk´)
+    end
+    x = getSiteType(Rk,Basis)
+
+    for (i,SymList) in enumerate(refSymmetries) #try symmetries that do not correspond this-reference site
+        i == x && continue
         for Sym in SymList
-            Rk´.b ∈ refSites_b && return Rvec(0,0,0,Rk´.b),translateToOrigin(Rj´,Rk´)
             Rk´ = Sym(Rk)
-            Rj´ = Sym(Rj)
+            Rk´.b ∈ refSites_b && return Rvec(0,0,0,Rk´.b),translateToOrigin(Sym(Rj),Rk´)
         end
     end
 
@@ -345,7 +353,6 @@ function pairToRefSite(Rk::Rvec_3D,Rj::Rvec_3D,Basis::Basis_Struct,nonRefSymmetr
 
     error("Could not find reference site for pair $(Rk),$(Rj)!")
 end
-
 
 
 """Converts a pair of sites Rk, and Rj to a symmetry inequivalent pair by first applying the symmetries in nonRefSymmetries to map Rk to a reference site and then refSymmetries to map to a symmetry reduced sector.
@@ -442,7 +449,7 @@ function generateReducedLattice(NLen,Basis::Basis_Struct,nonRefSymmetries,refSym
     PairList = sortedpairs[inds]
     PairTypes = sortedPairTypes[inds]
     pairNumberDict = generatePairNumberDict(AllSites,PairList,PairTypes,nonRefSymmetries,refSymmetries,Basis)
-    return (;pairNumberDict,PairList,PairTypes)
+    return (;pairNumberDict,AllSites,PairList,PairTypes)
 end
 
 
