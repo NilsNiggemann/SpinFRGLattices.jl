@@ -442,8 +442,6 @@ function generateReducedLattice(NLen,Basis::Basis_Struct,nonRefSymmetries,refSym
     PairList = sortedpairs[inds]
     PairTypes = sortedPairTypes[inds]
     pairNumberDict = generatePairNumberDict(AllSites,PairList,PairTypes,nonRefSymmetries,refSymmetries,Basis)
-    return pairNumberDict
-
     return (;pairNumberDict,PairList,PairTypes)
 end
 
