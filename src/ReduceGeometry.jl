@@ -183,8 +183,17 @@ end
 
 function generatePairNumberDict(siteList1::AbstractVector{R},siteList2::AbstractVector{R},PairList::AbstractVector{R},PairTypes,nonRefSyms,refSyms,Basis) where {R<:Rvec}
     MapToPairDict = getMapToPairDict(PairList,PairTypes)
-    pairNumberDict = fetch.([Threads.@spawn (R1,R2) => pairNumber(R1,R2,MapToPairDict,nonRefSyms,refSyms,Basis) for R1 in siteList1 for R2 in siteList2])
-    pairNumberDict = Dict(pairNumberDict::Vector{Pair{Tuple{R,R},Int}})
+    
+    AllElements = collect(Iterators.product(siteList1,siteList2))
+
+    pairNumberVec = Vector{Pair{Tuple{R,R},Int}}(undef,length(AllElements))
+
+    Threads.@threads for i in eachindex(AllElements)
+        R1,R2 = AllElements[i]
+        pairNumberVec[i] = (R1,R2) => pairNumber(R1,R2,MapToPairDict,nonRefSyms,refSyms,Basis)
+    end
+
+    pairNumberDict = Dict(pairNumberVec)
 
     filter!(x-> x.second != 0,pairNumberDict) # remove all pairs that are not in PairList
     return pairNumberDict
