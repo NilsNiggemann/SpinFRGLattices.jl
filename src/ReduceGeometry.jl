@@ -459,11 +459,17 @@ function generateReducedLattice(NLen,Basis::Basis_Struct,nonRefSymmetries,refSym
     
     PairList = sortedpairs[inds]
     PairTypes = sortedPairTypes[inds]
-    pairNumberDict = generatePairNumberDict(AllSites,PairList,PairTypes,nonRefSymmetries,refSymmetries,Basis)
+    pairNumberDict = generatePairNumberDict(AllSites,AllSites,PairList,PairTypes,nonRefSymmetries,refSymmetries,Basis)
     return (;pairNumberDict,AllSites,PairList,PairTypes)
 end
 
-
+function convertDictToArrays(pairNumbersDict)
+    ks = collect(keys(pairNumbersDict))
+    vs = collect(values(pairNumbersDict))
+    R1vec = StructArray([x[1] for x in ks])
+    R2vec = StructArray([x[2] for x in ks])
+    return R1vec,R2vec,vs
+end
 
 function findOnsitePairs(PairList,PairTypes,refSites)
     OSP = Int[]
