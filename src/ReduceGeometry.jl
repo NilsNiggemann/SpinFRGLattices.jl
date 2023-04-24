@@ -113,33 +113,7 @@ function setNeighborCouplings!(couplings,Jparams::AbstractVector,PairList,PairTy
     return couplings
 end
 
-function setNeighborCouplings!(couplings,Jparams::AbstractVector,PairList,Basis)
-    couplings .= 0.
-    neigborcoup = copy(couplings)
-
-    neigborcoup[2:1+length(Jparams)] = Jparams
-
-    R_Ref = only(Basis.refSites)
-    distance(x) = dist(R_Ref,x,Basis)
-    # lt(x,y) = distance(x) <distance(y)
-    # SortedIndices = sortperm(PairList,lt = lt)
-    norms = distance.(PairList)
-    index = 1
-    lastr = 0.
-    for (i,r) in enumerate(norms)
-        if abs(r - lastr)>1E-14
-            index +=1
-            lastr = r
-        end
-        if couplings[i] == 0. 
-            couplings[i] = neigborcoup[index]
-        else
-            @assert couplings[i] == neigborcoup[index] "couplings are not compatible between inequivalent sites"
-        end
-
-    end
-    return couplings
-end
+setNeighborCouplings!(System::Geometry,JVector,Basis) =  setNeighborCouplings!(System.couplings,JVector,System.PairList,System.PairTypes,Basis)
 
 """gives multiplicity of spl in list of sumelements """
 function multiplicity(spl::sumElements,list)
