@@ -71,7 +71,7 @@ function setCoupling!(System::Geometry,x::Int,R::Rvec,val::Number)
     setCoupling!(System.couplings,x,R,val,System.PairList,System.PairTypes)
 end
 
-"""Sets couplings according to given list with the first element being the nearest neigbor coupling. Currently only works for lattices with equivalent sites and sorted PairList!"""
+"""Sets couplings according to given list with the first element being the nearest neigbor coupling."""
 function setNeighborCouplings!(couplings,Jparams::AbstractVector,PairList,PairTypes,Basis)
     couplings .= 0.
 
