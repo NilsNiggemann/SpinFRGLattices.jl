@@ -193,7 +193,9 @@ function getOctochlore(NLen,J=[1.,0.];test = false)
     Name = string("Octochlore_NLen=",NLen)
     System =  getLatticeGeometry(NLen,Name,pairToInequiv,isCorrectSubsector,Basis,eltype(J),test=false)
     (;PairList,couplings) = System
-    setNeighborCouplings!(couplings,J,PairList,Basis)
+    setNeighborCouplings!(System,J,Basis)
+
+
     if test 
         testGeometry(System)
     end
