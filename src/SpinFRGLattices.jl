@@ -1,7 +1,6 @@
 module SpinFRGLattices
 
 using StaticArrays,StructArrays,Test
-version() = "0.4.0@matias"
 
 include("GeometryEssentials.jl")
 export sumElements,sitePair,Geometry,ArrayForm
