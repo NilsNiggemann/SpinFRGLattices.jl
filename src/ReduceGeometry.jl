@@ -71,49 +71,34 @@ function setCoupling!(System::Geometry,x::Int,R::Rvec,val::Number)
     setCoupling!(System.couplings,x,R,val,System.PairList,System.PairTypes)
 end
 
+function getDists(SiteList,Basis)
+    dists = [dist(i,j,Basis) for i in SiteList for j in SiteList] |> unique! |> sort!
+    return dists
+end
+
 """Sets couplings according to given list with the first element being the nearest neigbor coupling."""
-function setNeighborCouplings!(couplings,Jparams::AbstractVector,PairList,PairTypes,Basis)
+function setNeighborCouplings!(couplings,Jparams::AbstractVector,PairList,PairTypes,Basis;tol = 1e-13)
+    dists = getDists(PairList,Basis)
+    filter!(>(0),dists)
+    @assert length(Jparams) <= length(dists) "System is to small to set couplings"
+
     couplings .= 0.
 
-    function neigborcoup(i)
-        i in eachindex(Jparams) && return Jparams[i]
-        return 0.
-    end
-    norms = similar(couplings)
+    for (i,(Rj,type)) in enumerate(zip(PairList,PairTypes,couplings))
+        R0 = Basis.refSites[type.xi]
 
-    for i in eachindex(norms,PairList,PairTypes)
-        xi = PairTypes[i].xi
-        R_Ref = Basis.refSites[xi]
-        distance(x) = dist(R_Ref,x,Basis)
-        norms[i] = distance(PairList[i])
-    end
-    for xi in eachindex(Basis.refSites)
-        # lt(x,y) = distance(x) <distance(y)
-        # SortedIndices = sortperm(PairList,lt = lt)
-        index = 0
-        lastr = 0.
+        d = dist(R0,Rj,Basis)
         
-        pairInds = findall(x-> x.xi == xi,PairTypes)
-
-        for i in pairInds
-            r = norms[i]
-            if abs(r - lastr)>1E-14
-                index +=1
-                lastr = r
-            end
-            if couplings[i] == 0. 
-                couplings[i] = neigborcoup(index)
-            else
-                @assert couplings[i] == neigborcoup(index) "couplings are not compatible between inequivalent sites"
-            end
-
+        idx = findfirst(x -> abs(x - d) < tol, dists)
+        if idx !== nothing && idx <= length(Jparams)
+            couplings[i] = Jparams[idx]
         end
-    
     end
+
     return couplings
 end
 
-setNeighborCouplings!(System::Geometry,JVector,Basis) =  setNeighborCouplings!(System.couplings,JVector,System.PairList,System.PairTypes,Basis)
+setNeighborCouplings!(System,Jparams::AbstractVector,Basis) = setNeighborCouplings!(System.couplings,Jparams,System.PairList,System.PairTypes,Basis)
 
 """gives multiplicity of spl in list of sumelements """
 function multiplicity(spl::sumElements,list)
