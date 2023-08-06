@@ -2,6 +2,24 @@ using SpinFRGLattices,Test
 
 @test norm([1,1,1]) ≈ sqrt(3)
 
+@testset "pairNumberDict" begin
+    R1 = Rvec(0,0,1)
+    R2 = Rvec(0,0,2)
+    R3 = Rvec(-1,2,5)
+    R4 = Rvec(-1,2,2)
+    R5 = Rvec(-1,2,1)
+
+    PND = Dict( (R1,R2) => 1, (R1,R3) => 2, (R1,R4) => 3, (R1,R5) => 4)
+    @test SpinFRGLattices.getInequivIndex(R1,R2,PND) == 1
+    @test SpinFRGLattices.getInequivIndex(R1,R3,PND) == 2
+    @test SpinFRGLattices.getInequivIndex(R1,R4,PND) == 3
+    @test SpinFRGLattices.getInequivIndex(R2,R3,PND) == 0
+
+    @test SpinFRGLattices.getInequivIndex(R5,R4,PND) == 1
+    
+
+end
+##
 @testset verbose = true "Testing Lattices" begin
     @testset "Testing C2SquareKagome" begin
         exemplary_PairList_i_13_23 = 
@@ -110,12 +128,3 @@ testOnsitePairAdapt()
 
 S1 = LargeSquareKagome.getDimerSquareKagome(3)
 testPairListAdaptation(S1,LargeSquareKagome.Basis.NCell)
-
-"""taking a vector of ints find a hash of the vector"""
-function hashVector(v::Vector{Int64})
-    hash = 0
-    for i in v
-        hash += i
-    end
-    return hash
-end

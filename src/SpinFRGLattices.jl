@@ -9,7 +9,7 @@ include("Polymers.jl")
 export getPolymer
 
 include("LatticeHelpers.jl")
-export  Basis_Struct_2D, Basis_Struct_3D,Basis_Struct, Rvec_2D, Rvec_3D, Rvec, getLatticeVec, translateToOrigin, translation, getCartesian, aboveLine, belowLine,aboveLine_strict, belowLine_strict, MirrorLine, norm, dist, generatePairSites,generateLUnitCells,Mirror,printPairs
+export  Basis_Struct_2D, Basis_Struct_3D,Basis_Struct, Rvec_2D, Rvec_3D, Rvec, getLatticeVec, translateToOrigin, translation, getCartesian, aboveLine, belowLine,aboveLine_strict, belowLine_strict, MirrorLine, norm, dist, generatePairSites,generateLUnitCells,Mirror,printPairs, isInUnitCell
 
 include("ReduceGeometry.jl")
 export MapToPair, setCoupling!, setNeighborCouplings!, getSiteType, testGeometry, findSymmetryReduced, pairToInequiv_vec,generatePairToInequiv, getLatticeGeometry, getFRGComplexity

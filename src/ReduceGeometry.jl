@@ -294,18 +294,18 @@ end
 """Fallback for only one inequiv site for backward compatibility"""
 findSymmetryReduced(PairList::AbstractVector{<:Rvec_3D},Symmetrylist::AbstractVector{<:Rvec}) = findSymmetryReduced(PairList,ones(length(PairList)),[Symmetrylist,])
 
-"""Converts a pair of sites Rk, and Rj to a pair such that Rk lies in the first unit cells. For this, translation symmetry is used as well as a list of symmetries can transforms reference sites into each other.
+"""Converts a pair of sites Rk, and Rj to a pair such that corresponds to one of the reference sites. For this, translation symmetry is used as well as a list of symmetries can transforms reference sites into each other.
 """
-function pairToRefSite(Rk::Rvec_3D,Rj::Rvec_3D,Basis::Basis_Struct,nonRefSymmetries::A,refSymmetries::AbstractVector{<:A}) where {A<:AbstractVector{T} where T}
+function pairToRefSite(Rk::RV,Rj::RV,Basis::Basis_Struct,nonRefSymmetries::A,refSymmetries::AbstractVector{<:A}) where {A<:AbstractVector{T} where T,RV<:Rvec}
     refSites_b = (R.b for R in Basis.refSites)
     # check if Rk  is already in first unit cell
-    Rk.b ∈ refSites_b && return Rvec(0,0,0,Rk.b),translateToOrigin(Rj,Rk)
+    Rk.b ∈ refSites_b && return translatePairToUnitCell(Rk,Rj)
 
     Rk´ = Rk
 
     for Sym in nonRefSymmetries
         Rk´ = Sym(Rk)
-        Rk´.b ∈ refSites_b && return Rvec(0,0,0,Rk´.b),translateToOrigin(Sym(Rj),Rk´)
+        Rk´.b ∈ refSites_b && return translatePairToUnitCell(Rk´,Sym(Rj))
     end
     x = getSiteType(Rk,Basis)
 
@@ -313,7 +313,7 @@ function pairToRefSite(Rk::Rvec_3D,Rj::Rvec_3D,Basis::Basis_Struct,nonRefSymmetr
         i == x && continue
         for Sym in SymList
             Rk´ = Sym(Rk)
-            Rk´.b ∈ refSites_b && return Rvec(0,0,0,Rk´.b),translateToOrigin(Sym(Rj),Rk´)
+            Rk´.b ∈ refSites_b && return translatePairToUnitCell(Rk´,Sym(Rj))
         end
     end
 

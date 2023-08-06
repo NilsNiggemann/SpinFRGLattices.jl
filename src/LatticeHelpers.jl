@@ -84,6 +84,12 @@ function getCartesian(R::Rvec_3D,Basis)
     return R.n1 * Basis.a1 + R.n2 * Basis.a2 + R.n3 * Basis.a3 + Basis.b[R.b]
 end
 
+isInUnitCell(R::Rvec_3D) = R.n1 == R.n2 == R.n3 == 0
+isInUnitCell(R::Rvec_2D) = R.n1 == R.n2 == 0
+
+getUnitCell(Basis::Basis_Struct_2D) = [Rvec(0,0,b) for b in 1:Basis.NCell]
+getUnitCell(Basis::Basis_Struct_3D) = [Rvec(0,0,0,b) for b in 1:Basis.NCell]
+
 squareNorm(x::Number) = abs2(x)
 
 @inline squareNorm(A::AbstractArray) = sum(squareNorm,A)
@@ -118,6 +124,19 @@ end
 function translateToOrigin(Rj::Rvec_3D,Rk::Rvec_3D) 
     Rvec(Rj.n1-Rk.n1 , Rj.n2-Rk.n2 , Rj.n3-Rk.n3 , Rj.b)
 end
+
+placeInOrigin(R::Rvec_2D) = Rvec(0,0,R.b)
+placeInOrigin(R::Rvec_3D) = Rvec(0,0,0,R.b)
+
+"""given a pair (R1,R2) use global lattice translation symmetry to return a pair (R1new,R2new) such that R1new is in the unit cell and R2new is translated by the same amount."""
+function translatePairToUnitCell(R1::R,R2::R) where {R <: Rvec}
+    R2new = translateToOrigin(R2,R1)
+    R1new = placeInOrigin(R1)
+
+    return (R1new,R2new)
+end
+
+translatePairToUnitCell(pair::Tuple{R,R}) where {R <: Rvec} = translatePairToUnitCell(pair...)
 
 function translation(R::Rvec,T::AbstractArray,Basis)
     r = getCartesian(R,Basis) .+ T
