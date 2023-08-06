@@ -20,6 +20,31 @@ using SpinFRGLattices,Test
 
 end
 ##
+@testset "mapToInquiv" failfast = true begin
+    System = SquareKagome.getSquareKagome(5)
+    (;PairList,PairTypes) = System
+    pairToInequiv = SquareKagome.pairToInequiv
+    Basis = SquareKagome.Basis
+    
+    siteList = unique(generatePairSites(5,Basis))
+    siteList2 = unique(generatePairSites(9,Basis))
+
+    pairNumber_(R1,R2) = SpinFRGLattices.pairNumber(R1,R2,PairList,PairTypes,Basis,pairToInequiv)
+
+    pairNumberDictAll = Dict([ (R1,R2) => pairNumber_(R1,R2) for R1 in siteList for R2 in siteList]) # store the pair number of all possible pairs in a dictionary
+    pairNumberDict_small = SpinFRGLattices.generatePairNumberDict_fast(siteList2,PairList,PairTypes,pairToInequiv,Basis)
+    for (pair,p) in pairNumberDictAll failfast = true
+        @testset let (pair,p) = (pair, p)
+            newpair = SpinFRGLattices.translatePairToUnitCell(pair)
+            # @test pairNumberDictAll[p] == p
+            @test SpinFRGLattices.getInequivIndex(pair...,pairNumberDict_small) == p
+        end
+        # @test SpinFRGLattices.getInequivIndex(pair...,pairNumberDict_small) == p
+    end
+
+end
+##
+return
 @testset verbose = true "Testing Lattices" begin
     @testset "Testing C2SquareKagome" begin
         exemplary_PairList_i_13_23 = 
