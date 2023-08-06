@@ -26,7 +26,7 @@ end
 {RvecDim,SiteSumType <: StructArray{sumElements,2}}
 RvecDim is type of Rvec, SiteSumType should be a struct array for performance reasons!
 """
-struct Geometry{RvecDim,SiteSumType <: StructArray{sumElements,2},T}
+struct Geometry{RvecDim,SiteSumType<:StructArray{sumElements,2},T}
     Name::String
     NLen::Int # System size: number of nearest neighbor pairs
     siteSum::SiteSumType #Matrix which contains all info about the site sum
@@ -42,27 +42,27 @@ end
 
 function Geometry(;
     Name::String,
-    NLen::Int = 1,
+    NLen::Int=1,
     siteSum,
-    Npairs::Int = size(siteSum,2),
-    Nsum::Vector{Int} = calcMaxpairs(siteSum),
+    Npairs::Int=size(siteSum, 2),
+    Nsum::Vector{Int}=calcMaxpairs(siteSum),
     couplings::AbstractVector,
     PairList::Vector{RvecDim},
-    invpairs::Vector{Int} = collect(Int,1:Npairs),
-    PairTypes::Vector{sitePair} = [sitePair(1,1) for i in 1:Npairs],
-    OnsitePairs::Vector{Int} = [1] ,
-    NUnique::Int = length(OnsitePairs),
-) where RvecDim
-    return Geometry(Name,NLen,StructArray(siteSum),Npairs,Nsum,couplings,PairList,invpairs,NUnique,PairTypes,OnsitePairs)
+    invpairs::Vector{Int}=collect(Int, 1:Npairs),
+    PairTypes::Vector{sitePair}=[sitePair(1, 1) for i in 1:Npairs],
+    OnsitePairs::Vector{Int}=[1],
+    NUnique::Int=length(OnsitePairs)
+) where {RvecDim}
+    return Geometry(Name, NLen, StructArray(siteSum), Npairs, Nsum, couplings, PairList, invpairs, NUnique, PairTypes, OnsitePairs)
 end
 
 """Returns Vector containing the exact length of each row of siteSum so that site sum can be ended as soon as possible and we don't need to check if m==0 at performance critical parts."""
 function calcMaxpairs(siteSum)
-    Nsum,Npairs = size(siteSum)
-    res = zeros(Int,Npairs)
+    Nsum, Npairs = size(siteSum)
+    res = zeros(Int, Npairs)
     for j in 1:Npairs
         for k in 1:Nsum
-            if siteSum[k,j].m == 0
+            if siteSum[k, j].m == 0
                 break
             end
             res[j] = k
@@ -71,10 +71,10 @@ function calcMaxpairs(siteSum)
     return res
 end
 
-Base.show(io::IO, ::MIME"text/plain", x::sumElements) = print(io,x.ki," ",x.kj," ",x.m," ",x.xk)
-Base.show(io::IO, x::sumElements) = print(io,x.ki," ",x.kj," ",x.m," ",x.xk)
-Base.show(io::IO, ::MIME"text/plain", x::sitePair) = print(io,x.xi,"_",x.xj)
-Base.show(io::IO, x::sitePair) = print(io,x.xi,"_",x.xj)
+Base.show(io::IO, ::MIME"text/plain", x::sumElements) = print(io, x.ki, " ", x.kj, " ", x.m, " ", x.xk)
+Base.show(io::IO, x::sumElements) = print(io, x.ki, " ", x.kj, " ", x.m, " ", x.xk)
+Base.show(io::IO, ::MIME"text/plain", x::sitePair) = print(io, x.xi, "_", x.xj)
+Base.show(io::IO, x::sitePair) = print(io, x.xi, "_", x.xj)
 
 # Base.show(io::IO, ::MIME"text/plain", siteSum::Matrix{sumElements}) = show(io,MIME"text/plain"(),ArrayForm(siteSum))
 
@@ -82,11 +82,11 @@ Base.show(io::IO, x::sitePair) = print(io,x.xi,"_",x.xj)
 For alternative printing/saving siteSum
 """
 function ArrayForm(siteSum::Matrix{sumElements})
-    Nsum,Npairs = size(siteSum)
-    ArrayForm = Array{Int,3}(undef,4,Nsum,Npairs)
+    Nsum, Npairs = size(siteSum)
+    ArrayForm = Array{Int,3}(undef, 4, Nsum, Npairs)
     for i in 1:Nsum, j in 1:Npairs
-        x = siteSum[i,j]
-        ArrayForm[:,i,j] = [x.ki,x.kj,x.m,x.xk]
+        x = siteSum[i, j]
+        ArrayForm[:, i, j] = [x.ki, x.kj, x.m, x.xk]
     end
     ArrayForm
 end
@@ -96,9 +96,9 @@ function Base.isless(x::sumElements, y::sumElements)
         return false # move irreleveant splits to end of list when sorting
     elseif y.m == 0
         return true # move irreleveant splits to end of list when sorting
-    elseif x.ki <y.ki # standard case
+    elseif x.ki < y.ki # standard case
         return true
-    elseif x.ki == y.ki && x.kj <y.kj
+    elseif x.ki == y.ki && x.kj < y.kj
         return true
     else
         return false

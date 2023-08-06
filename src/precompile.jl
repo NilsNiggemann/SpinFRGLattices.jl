@@ -9,8 +9,8 @@ function capture_stdout(f)
 end
 
 function __precompile__()
-    System = SquareLattice.getSquareLattice(4,[1,0.5,0.2],test=true)
-    System = Pyrochlore.getPyrochlore(4,[1,0.5,0.2],test=true)
+    System = SquareLattice.getSquareLattice(4, [1, 0.5, 0.2], test=true)
+    System = Pyrochlore.getPyrochlore(4, [1, 0.5, 0.2], test=true)
     return
 end
 

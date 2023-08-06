@@ -1,12 +1,12 @@
 function testGeometry(Geo::Geometry)
 
-    (;siteSum,Npairs,invpairs,couplings,OnsitePairs,NUnique,PairList,PairTypes) = Geo
-    testCouplings(couplings,invpairs)
-    testSiteSum(siteSum,OnsitePairs)
-    testAllowedValues(siteSum,NUnique)
-    testOnsiteSum(siteSum,OnsitePairs)
+    (; siteSum, Npairs, invpairs, couplings, OnsitePairs, NUnique, PairList, PairTypes) = Geo
+    testCouplings(couplings, invpairs)
+    testSiteSum(siteSum, OnsitePairs)
+    testAllowedValues(siteSum, NUnique)
+    testOnsiteSum(siteSum, OnsitePairs)
 
-    testPairList(PairList,PairTypes)
+    testPairList(PairList, PairTypes)
 
     @testset "invpairs" begin
         for i in invpairs
@@ -15,16 +15,16 @@ function testGeometry(Geo::Geometry)
     end
 
     @testset "couplings" begin
-        for (i,c) in zip(invpairs,couplings)
-            @test isapprox(c, couplings[i],atol =eps(Float64))
+        for (i, c) in zip(invpairs, couplings)
+            @test isapprox(c, couplings[i], atol=eps(Float64))
         end
     end
-            
+
     @testset "OnSitePairs" begin
-        
+
         @test OnsitePairs == unique(i -> PairTypes[i].xi, 1:Npairs) #Convention: Onsite pairs are always the first pair for each ref site
-        @test PairTypes[OnsitePairs] == [sitePair(i,i) for i in 1:NUnique]
-        @test length(OnsitePairs) == NUnique   
+        @test PairTypes[OnsitePairs] == [sitePair(i, i) for i in 1:NUnique]
+        @test length(OnsitePairs) == NUnique
         @test invpairs[OnsitePairs] == OnsitePairs # Test that OnsitePairs are their own inverse  
     end
 
@@ -34,10 +34,10 @@ function testGeometry(Geo::Geometry)
     end
 
     for j in OnsitePairs
-        j1cut = siteSum[:,j] #get site sum for onsite pairs ki = kj
+        j1cut = siteSum[:, j] #get site sum for onsite pairs ki = kj
         inds = j1cut.ki #select ki elements
         # deleteat!(inds, findall(x->x==0,inds)) # remove 0
-        filter!(!=(0),inds)
+        filter!(!=(0), inds)
         OnsiteSum = sort(invpairs[inds])  # find inverse pairs -> We expect these terms to be of the form (Vi1,Vi2,Vi3,Vi4,...) with each inequiv pair appearing once
         OnsiteSum == collect(OnsiteSum[1]:OnsiteSum[end]) || @warn "There might be missing symmetries"
 
@@ -46,10 +46,10 @@ function testGeometry(Geo::Geometry)
 end
 """Xii = sum_k V_ki V_ki P_kk. --> In site sums corresponding to onsite pairs, the only onsite pair that can appear is (i,i). If there are more than one inequivalent sites, the other pairs can not appear in this summation!
 """
-function testOnsiteSum(siteSum,OnsitePairs)
-    @testset "OnSiteSum" begin 
+function testOnsiteSum(siteSum, OnsitePairs)
+    @testset "OnSiteSum" begin
         for j in OnsitePairs
-            for ki in siteSum[:,j].ki
+            for ki in siteSum[:, j].ki
                 if ki in OnsitePairs
                     @test ki == j
                 end
@@ -58,18 +58,18 @@ function testOnsiteSum(siteSum,OnsitePairs)
     end
 end
 
-function testSiteSum(siteSum,OnsitePairs)
+function testSiteSum(siteSum, OnsitePairs)
 
-    @testset "SiteSum OnsitePairs" begin 
+    @testset "SiteSum OnsitePairs" begin
         for j in OnsitePairs
-            for spl in siteSum[:,j]
+            for spl in siteSum[:, j]
                 @test spl.ki == spl.kj
             end
         end
     end
 end
 
-function testAllowedValues(siteSum,NUnique)
+function testAllowedValues(siteSum, NUnique)
 
     @testset "Allowed values" begin
         for spl in siteSum
@@ -86,27 +86,27 @@ function testAllowedValues(siteSum,NUnique)
             end
         end
     end
-    
+
 end
 
 
-function testNsum(Nsum,siteSum)
+function testNsum(Nsum, siteSum)
     @testset "number of sum terms" begin
         @test calcMaxpairs(siteSum) == Nsum
     end
 end
-testNsum(G::Geometry) = testNsum(G.Nsum,G.siteSum)
+testNsum(G::Geometry) = testNsum(G.Nsum, G.siteSum)
 
-function testPairList(PairList,PairTypes)
+function testPairList(PairList, PairTypes)
     @testset "PairList" begin
-        for (j,pair) in enumerate(PairList)
+        for (j, pair) in enumerate(PairList)
             xi = PairTypes[j].xi
-            @test MapToPair(xi,pair,PairList,PairTypes) == j # j must correspond to pair in PairList
+            @test MapToPair(xi, pair, PairList, PairTypes) == j # j must correspond to pair in PairList
         end
     end
 end
 
-function testPairListSym(PairList::AbstractVector,Sym::Function)
+function testPairListSym(PairList::AbstractVector, Sym::Function)
     nowarnings = true
     for R in PairList
         Rn = Sym(R)
@@ -115,37 +115,37 @@ function testPairListSym(PairList::AbstractVector,Sym::Function)
     return nowarnings
 end
 
-function testPairListSym(PairList::AbstractVector,Syms)
+function testPairListSym(PairList::AbstractVector, Syms)
     nowarnings = true
     for Sym in Syms
-        if !testPairListSym(PairList,Sym)
+        if !testPairListSym(PairList, Sym)
             nowarnings = false
         end
     end
     return nowarnings
 end
 
-function checkSymmetries(PairList::Vector{RT},Sym::Function) where RT <: Rvec
+function checkSymmetries(PairList::Vector{RT}, Sym::Function) where {RT<:Rvec}
     for R in PairList
         Rn = Sym(R)
     end
     return true
 end
 
-function checkSymmetries(PairList::Vector{RT},Syms) where RT <: Rvec
+function checkSymmetries(PairList::Vector{RT}, Syms) where {RT<:Rvec}
     for Sym in Syms
-        checkSymmetries(PairList,Sym)
+        checkSymmetries(PairList, Sym)
     end
     return true
 end
 
 
-function testPairListAdaptation(G::Geometry,NCell::Int)
-    K = adaptPairs(G,NCell,0.)
+function testPairListAdaptation(G::Geometry, NCell::Int)
+    K = adaptPairs(G, NCell, 0.0)
     @testset "test PairList Adaptation" begin
         @test K.PairList[K.OnsitePairs] == G.PairList[G.OnsitePairs]
-        for i in eachindex(K.OnsitePairs,G.OnsitePairs)
-            @test K.PairList[K.OnsitePairs[i]+1] == createSatellite(G.PairList[G.OnsitePairs[i]],NCell+i)
+        for i in eachindex(K.OnsitePairs, G.OnsitePairs)
+            @test K.PairList[K.OnsitePairs[i]+1] == createSatellite(G.PairList[G.OnsitePairs[i]], NCell + i)
         end
     end
     @testset "test PairTypes" begin
@@ -153,17 +153,17 @@ function testPairListAdaptation(G::Geometry,NCell::Int)
     end
 end
 
-function testCouplings(couplings,invpairs)
+function testCouplings(couplings, invpairs)
     @testset "test couplings J_ij = J_ji" begin
         @test couplings[invpairs] ≈ couplings
     end
 end
 
-function printInvPairs(invpairs;verbose = false)
+function printInvPairs(invpairs; verbose=false)
     println("(ij → invpairs[ij] → invpairs²[ij])")
-    for (i,j) in enumerate(invpairs)
+    for (i, j) in enumerate(invpairs)
         isinvertible = invpairs[j] == i
         color = isinvertible ? :normal : :red
-        (!isinvertible || verbose) && printstyled( i , " → ", j ," → ", invpairs[j],"\n";color)
+        (!isinvertible || verbose) && printstyled(i, " → ", j, " → ", invpairs[j], "\n"; color)
     end
 end
