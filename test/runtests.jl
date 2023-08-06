@@ -10,12 +10,14 @@ using SpinFRGLattices,Test
     R5 = Rvec(-1,2,1)
 
     PND = Dict( (R1,R2) => 1, (R1,R3) => 2, (R1,R4) => 3, (R1,R5) => 4)
-    @test SpinFRGLattices.getInequivIndex(R1,R2,PND) == 1
-    @test SpinFRGLattices.getInequivIndex(R1,R3,PND) == 2
-    @test SpinFRGLattices.getInequivIndex(R1,R4,PND) == 3
-    @test SpinFRGLattices.getInequivIndex(R2,R3,PND) == 0
+    PND = SpinFRGLattices.PairNumbersDict(PND)
 
-    @test SpinFRGLattices.getInequivIndex(R5,R4,PND) == 1
+    @test PND[(R1,R2)] == 1
+    @test PND[(R1,R3)] == 2
+    @test PND[(R1,R4)] == 3
+    @test PND[(R2,R3)] == 0
+
+    @test PND[(R5,R4)] == 1
     
 
 end
@@ -31,13 +33,12 @@ end
     pairNumber_(R1,R2) = SpinFRGLattices.pairNumber(R1,R2,PairList,PairTypes,Basis,pairToInequiv)
 
     pairNumberDictAll = Dict([ (R1,R2) => pairNumber_(R1,R2) for R1 in siteList for R2 in siteList]) # store the pair number of all possible pairs in a dictionary
-    pairNumberDict_small = SpinFRGLattices.generatePairNumberDict(siteList,PairList,PairTypes,pairToInequiv,Basis)
+    pairNumberDict_small = SpinFRGLattices.pairNumbersDict(siteList,PairList,PairTypes,pairToInequiv,Basis)
     for (pair,p) in pairNumberDictAll failfast = true
         @testset let (pair,p) = (pair, p)
-            @test SpinFRGLattices.getInequivIndex(pair...,pairNumberDict_small) == p
+            @test pairNumberDict_small[pair] == p
         end
     end
-
 end
 ##
 

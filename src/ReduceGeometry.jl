@@ -140,54 +140,60 @@ function pairNumber(R1::R,R2::R,mapToPairDict::AbstractDict,nonRefSyms,refSyms,B
     return 0
 end
 
-function generatePairNumberDict(siteList::AbstractVector{R},PairList::AbstractVector{R},PairTypes,nonRefSyms,refSyms,Basis) where {R<:Rvec}
+"""Given a Dict that maps a pair to the corresponding inequivalent pair index `i` returns `i` if the pair can be mapped correctly. Otherwise, return `0`
+It is assumed that global translations along lattice vectors can always be performed.
+"""
+struct PairNumbersDict{R<:Rvec} <: AbstractDict{Tuple{R,R},Int}
+    D::Dict{Tuple{R,R},Int}
+end
+Base.keys(P::PairNumbersDict) = keys(P.D)
+Base.values(P::PairNumbersDict) = values(P.D)
+Base.length(P::PairNumbersDict) = length(P.D)
+Base.iterate(P::PairNumbersDict) = iterate(P.D)
+Base.iterate(P::PairNumbersDict,i) = iterate(P.D,i)
+Base.get(P::PairNumbersDict,i,default) = get(P.D,i,default)
+
+function Base.getindex(P::PairNumbersDict{R},pair::Tuple{R,R}) where {R<:Rvec}
+    pair = translatePairToUnitCell(pair)
+    
+    return get(P.D,pair,0)    
+end
+
+function pairNumbersDict(siteList::AbstractVector{R},PairList::AbstractVector{R},PairTypes,nonRefSyms,refSyms,Basis) where {R<:Rvec}
     MapToPairDict = getMapToPairDict(PairList,PairTypes)
     
-    pairs = Set(translatePairToUnitCell(R1,R2) for R1 in siteList for R2 in siteList)
+    pairs = collect(Set(translatePairToUnitCell(R1,R2) for R1 in siteList for R2 in siteList))
 
     pairNumberVec = Vector{Pair{Tuple{R,R},Int}}(undef,length(pairs))
 
-    Threads.@threads for i in eachindex(pairNumberVec)
-        R1,R2 = AllElements[i]
+    Threads.@threads for i in eachindex(pairNumberVec,pairs)
+        R1,R2 = pairs[i]
         pairNumberVec[i] = (R1,R2) => pairNumber(R1,R2,MapToPairDict,nonRefSyms,refSyms,Basis)
     end
 
     pairNumberDict = Dict(pairNumberVec)
 
     filter!(x-> x.second != 0,pairNumberDict) # remove all pairs that are not in PairList
-    return pairNumberDict
+    return PairNumbersDict(pairNumberDict)
 end
 
 """This function is for backwards compatibility. It is recommended to use the function with the same name that uses the mapToPairDict instead of the pairToInequiv function"""
-function generatePairNumberDict(siteList,PairList,PairTypes,pairToInequiv::Function,Basis)
+function pairNumbersDict(siteList,PairList,PairTypes,pairToInequiv::Function,Basis)
     pairNumber_((R1,R2)) = pairNumber(R1,R2,PairList,PairTypes,Basis,pairToInequiv)
     pairs = Set(translatePairToUnitCell(R1,R2) for R1 in siteList for R2 in siteList)
     pairNumberDict = Dict([ pair => pairNumber_(pair) for pair in pairs]) # store the pair number of all possible pairs in a dictionary
     filter!(x-> x.second != 0,pairNumberDict) # remove all pairs that are not in PairList
 
-    return pairNumberDict
+    return PairNumbersDict(pairNumberDict)
 end
 
-"""Given a Dict that maps a pair to the corresponding inequivalent pair index `i` returns `i` if the pair can be mapped correctly. Otherwise, return `0`
-It is assumed that global translations along lattice vectors can always be performed.
-"""
-function getInequivIndex(R1::R,R2::R,pairNumbersDict::AbstractDict{Tuple{R,R},Int}) where {R<:Rvec}
-    pair = translatePairToUnitCell(R1,R2)
-    
-    # NOTE: Performance could be gained by using Base.ht_keyindex(D::Dict, key) which returns -1 if the key does not exist. However this function is not exported.
-    if pair in keys(pairNumbersDict)
-        return pairNumbersDict[pair]
-    else
-        return 0
-    end
-end
 
 """Taking an inequivalent pair (x,R) with x <= NUnique returns corresponding inversed pair (R,x)"""
 function inversepair(R_ref::Rvec,R::Rvec,PairList,PairTypes,Basis,pairToInequiv::Function)
     return pairNumber(R,R_ref,PairList,PairTypes,Basis,pairToInequiv)
 end
 
-inversepair(R_ref::Rvec,R::Rvec,pairNumbersDict::AbstractDict) = pairNumbersDict[(R,R_ref)]
+inversepair(R_ref::Rvec,R::Rvec,pairNumbersDict::PairNumbersDict) = pairNumbersDict[(R,R_ref)]
 """
 Performs site summation for each Rj (lhs) of flow equations and returns all pairs that appear in it corresponding to pairs of vertices on rhs.
 It is assumed that our reference sites are the first in the basis!
@@ -195,18 +201,17 @@ It is assumed that our reference sites are the first in the basis!
 function CalcSiteSum(PairList::AbstractVector{<:Rvec},PairTypes::AbstractVector{sitePair},siteList::AbstractVector{<:Rvec},pairToInequiv::Function,Basis::Basis_Struct)
     pairNumber_(R1,R2) = pairNumber(R1,R2,PairList,PairTypes,Basis,pairToInequiv)
     # pairNumberDict = Dict([ (R1,R2) => pairNumber_(R1,R2) for R1 in siteList for R2 in PairList]) # store the pair number of all possible pairs in a dictionary
-    pairNumberDict = generatePairNumberDict(siteList,PairList,PairTypes,pairToInequiv,Basis)
-    filter!(x-> x.second != 0,pairNumberDict) # remove all pairs that are not in PairList
+    pairNumberDict = pairNumbersDict(siteList,PairList,PairTypes,pairToInequiv,Basis)
     return CalcSiteSum(PairList,PairTypes,siteList,pairNumberDict,Basis)
 end
 
 function CalcSiteSum(PairList::AbstractVector{<:Rvec},PairTypes::AbstractVector{sitePair},siteList::AbstractVector{<:Rvec},syms::Tuple,Basis::Basis_Struct)
     (nonRefSyms,refSyms) = syms
-    pairNumberDict = generatePairNumberDict(siteList,PairList,PairTypes,nonRefSyms,refSyms,Basis)
+    pairNumberDict = pairNumbersDict(siteList,PairList,PairTypes,nonRefSyms,refSyms,Basis)
     return CalcSiteSum(PairList,PairTypes,siteList,pairNumberDict,Basis)
 end
 
-function CalcSiteSum(PairList::AbstractVector{<:Rv},PairTypes,siteList::AbstractVector{<:Rv},pairNumberDict::AbstractDict,Basis::Basis_Struct) where {Rv<:Rvec}
+function CalcSiteSum(PairList::AbstractVector{<:Rv},PairTypes,siteList::AbstractVector{<:Rv},pairNumberDict::PairNumbersDict,Basis::Basis_Struct) where {Rv<:Rvec}
     Npairs = length(PairList)
     
     Nsum = length(siteList)
@@ -218,10 +223,10 @@ function CalcSiteSum(PairList::AbstractVector{<:Rv},PairTypes,siteList::Abstract
         Ri = Basis.refSites[PairTypes[j].xi]  # current reference site
         for (k,Rk) in enumerate(siteList)
             
-            kj_pair = getInequivIndex(Rk,Rj,pairNumberDict)
+            kj_pair = pairNumberDict[(Rk,Rj)]
             kj_pair == 0 && continue # skip if pair is not in PairList
 
-            ki_pair = getInequivIndex(Rk,Ri,pairNumberDict)
+            ki_pair = pairNumberDict[(Rk,Ri)]
             ki_pair == 0 && continue # skip if pair is not in PairList
 
             pairs[k,j]= sumElements(ki_pair,kj_pair,1,getSiteType(Rk,Basis))
@@ -394,7 +399,7 @@ function getLatticeGeometry(NLen,Name,Basis::Basis_Struct,nonRefSymmetries,refSy
     inequivalentPairs = sortedpairs[inds]
     PairTypes = sortedPairTypes[inds]
 
-    pairNumberDict = generatePairNumberDict(AllSites,inequivalentPairs,PairTypes,nonRefSymmetries,refSymmetries,Basis)
+    pairNumberDict = pairNumbersDict(AllSites,inequivalentPairs,PairTypes,nonRefSymmetries,refSymmetries,Basis)
 
     splits = CalcSiteSum(inequivalentPairs,PairTypes,AllSites,pairNumberDict,Basis)
     siteSum = reduceSiteSum(splits)
@@ -424,7 +429,7 @@ function generateReducedLattice(NLen,Basis::Basis_Struct,nonRefSymmetries,refSym
     
     PairList = sortedpairs[inds]
     PairTypes = sortedPairTypes[inds]
-    pairNumberDict = generatePairNumberDict(AllSites,PairList,PairTypes,nonRefSymmetries,refSymmetries,Basis)
+    pairNumberDict = pairNumbersDict(AllSites,PairList,PairTypes,nonRefSymmetries,refSymmetries,Basis)
     return (;pairNumberDict,AllSites,PairList,PairTypes,Basis)
 end
 
