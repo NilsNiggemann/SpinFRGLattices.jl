@@ -59,3 +59,7 @@ testOnsitePairAdapt()
 
 S1 = LargeSquareKagome.getDimerSquareKagome(3)
 testPairListAdaptation(S1,LargeSquareKagome.Basis.NCell)
+    @testset "Testing TriangularLattice" begin
+        testGeometry(TriangularLattice.getTriangularLattice(6))
+    end
+end
