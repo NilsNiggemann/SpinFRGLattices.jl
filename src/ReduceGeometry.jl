@@ -71,24 +71,26 @@ function setCoupling!(System::Geometry, x::Int, R::Rvec, val::Number)
     setCoupling!(System.couplings, x, R, val, System.PairList, System.PairTypes)
 end
 
-function getDists(SiteList, Basis)
-    dists = [dist(i, j, Basis) for i in SiteList for j in SiteList] |> unique! |> sort!
+function getDists(SiteList, Basis;tol=1e-15)
+    digits = round(Int,-exponent(tol) * log10(2) )
+    dists = [round(dist(i, j, Basis);digits) for i in SiteList for j in SiteList] |> unique! |> sort!
     return dists
 end
 
 """Sets couplings according to given list with the first element being the nearest neigbor coupling."""
 function setNeighborCouplings!(couplings, Jparams::AbstractVector, PairList, PairTypes, Basis; tol=1e-13)
-    dists = getDists(PairList, Basis)
+    dists = getDists(PairList, Basis;tol)
     filter!(>(0), dists)
+
     @assert length(Jparams) <= length(dists) "System is to small to set couplings"
 
-    couplings .= 0.0
+    couplings .= zero(eltype(couplings))
 
     for (i, (Rj, type)) in enumerate(zip(PairList, PairTypes, couplings))
         R0 = Basis.refSites[type.xi]
 
         d = dist(R0, Rj, Basis)
-
+        
         idx = findfirst(x -> abs(x - d) < tol, dists)
         if idx !== nothing && idx <= length(Jparams)
             couplings[i] = Jparams[idx]
@@ -98,7 +100,7 @@ function setNeighborCouplings!(couplings, Jparams::AbstractVector, PairList, Pai
     return couplings
 end
 
-setNeighborCouplings!(System, Jparams::AbstractVector, Basis) = setNeighborCouplings!(System.couplings, Jparams, System.PairList, System.PairTypes, Basis)
+setNeighborCouplings!(System, Jparams::AbstractVector, Basis;kwargs...) = setNeighborCouplings!(System.couplings, Jparams, System.PairList, System.PairTypes, Basis;kwargs...)
 
 """gives multiplicity of spl in list of sumelements """
 function multiplicity(spl::sumElements, list)
