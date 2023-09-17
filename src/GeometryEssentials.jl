@@ -26,9 +26,9 @@ end
 {RvecDim,SiteSumType <: StructArray{sumElements,2}}
 RvecDim is type of Rvec, SiteSumType should be a struct array for performance reasons!
 """
-struct Geometry{RvecDim,SiteSumType<:StructArray{sumElements,2},T}
+struct Geometry{RvecDim,SiteSumType<:StructArray{sumElements,2},T,T1<:Real}
     Name::String
-    NLen::Int # System size: number of nearest neighbor pairs
+    NLen::T1 # System size: number of nearest neighbor pairs
     siteSum::SiteSumType #Matrix which contains all info about the site sum
     Npairs::Int
     Nsum::Vector{Int} #number of terms in the site sum for each Rij
@@ -42,7 +42,7 @@ end
 
 function Geometry(;
     Name::String,
-    NLen::Int=1,
+    NLen=1,
     siteSum,
     Npairs::Int=size(siteSum, 2),
     Nsum::Vector{Int}=calcMaxpairs(siteSum),

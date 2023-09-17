@@ -268,6 +268,15 @@ function generateLUnitCells(L, Basis::Basis_Struct_3D, refSite=Basis.refSites[1]
     return PairList
 end
 
+maximumLatticeConst(Basis::Basis_Struct_2D) = maximum(norm, (Basis.a1,Basis.a2))
+maximumLatticeConst(Basis::Basis_Struct_3D) = maximum(norm, (Basis.a1,Basis.a2,Basis.a3))
+
+"""given a radius R, returns all lattice sites within a sphere of radius R"""
+function generateSphere(R,Basis::Basis_Struct,refSite = Basis.refSites[1])
+    a = maximumLatticeConst(Basis)
+    PL = generateLUnitCells(ceil(Int,R/a),Basis,refSite)
+    return filter!(x->dist(refSite,x,Basis) <= R,PL)
+end
 
 function Mirror(r::AbstractArray, p1::SVector{2}, p2::SVector{2})
     A = p2[2] - p1[2]
