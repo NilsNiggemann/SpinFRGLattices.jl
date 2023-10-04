@@ -421,11 +421,8 @@ function getLatticeGeometry(NLen, Name, Basis::Basis_Struct, nonRefSymmetries, r
     return (System)
 end
 
-Base.@kwdef struct ReducedLattice{R<:Rvec,B<:Basis_Struct}
+struct ReducedLattice{R<:Rvec,B<:Basis_Struct}
     pairNumberDict::PairNumbersDict{R}
-    AllSites::Vector{R}
-    PairList::Vector{R}
-    PairTypes::Vector{sitePair}
     Basis::B
 end
 
@@ -439,7 +436,7 @@ function generateReducedLattice(NLen, Basis::Basis_Struct, nonRefSymmetries, ref
     PairList = sortedpairs[inds]
     PairTypes = sortedPairTypes[inds]
     pairNumberDict = pairNumbersDict(AllSites, PairList, PairTypes, nonRefSymmetries, refSymmetries, Basis)
-    return ReducedLattice(; pairNumberDict, AllSites, PairList, PairTypes, Basis)
+    return ReducedLattice(pairNumberDict, Basis)
 end
 
 """return all neccessary information about reduced lattice
@@ -448,7 +445,7 @@ function generateReducedLattice(System::Geometry, Basis::Basis_Struct,  pairToIn
     AllSites = method(System.NLen,Basis)
     (;PairList,PairTypes) = System
     pairNumberDict = pairNumbersDict(AllSites, PairList, PairTypes, pairToInequiv::Function, Basis)
-    return ReducedLattice(; pairNumberDict, AllSites, PairList, PairTypes, Basis)
+    return ReducedLattice(pairNumberDict, Basis)
 end
 
 function convertDictToArrays(pairNumbersDict)
