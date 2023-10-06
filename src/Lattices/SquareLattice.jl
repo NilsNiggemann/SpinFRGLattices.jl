@@ -86,7 +86,8 @@ module SquareLattice
         System =  getLatticeGeometry(NLen,Name,pairToInequiv,inCorrectSubsector,Basis;kwargs...)
 
         (;PairList,couplings) = System
-        setNeighborCouplings!(couplings,J,PairList,Basis)
+        setNeighborCouplings!(System,J,Basis)
+
         return(System)
     end
 end

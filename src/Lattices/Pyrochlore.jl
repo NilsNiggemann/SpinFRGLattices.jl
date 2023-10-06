@@ -170,7 +170,7 @@ module Pyrochlore
         Name = string("Pyrochlore_NLen=",NLen)
         System =  getLatticeGeometry(NLen,Name,pairToInequiv,inCorrectSubsector,Basis,test=test)
         (;PairList,couplings) = System
-        setNeighborCouplings!(couplings,J,PairList,Basis)
+        setNeighborCouplings!(System,J,Basis)
 
         return(System)
     end

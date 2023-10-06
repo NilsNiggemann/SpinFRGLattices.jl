@@ -123,7 +123,7 @@ module LargeKagomeLattice
         end
 
         #first and second nearest neighbors 
-        setNeighborCouplings!(couplings,[0,J2],PairList,PairTypes,Basis)
+        setNeighborCouplings!(System,[0,J2])
         
         #third nearest neighbors  J3a
         setJ!(1,Rvec(0,0,4),J3a)
