@@ -24,7 +24,7 @@ end
 
 """Uses passed function inCorrectSector (R_ref,R) -> bool to generate a new minimal list of pairs that are not equivalent by symmetry"""
 function getinequivalentPairs(PairList, PairTypes, inCorrectSector::Function, Basis)
-    inds = []
+    inds = Int[]
 
     for (i, R) in enumerate(PairList)
         R_Ref = Basis.refSites[PairTypes[i].xi]
