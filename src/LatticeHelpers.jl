@@ -270,10 +270,12 @@ end
 
 maximumLatticeConst(Basis::Basis_Struct_2D) = maximum(norm, (Basis.a1,Basis.a2))
 maximumLatticeConst(Basis::Basis_Struct_3D) = maximum(norm, (Basis.a1,Basis.a2,Basis.a3))
+minimumLatticeConst(Basis::Basis_Struct_2D) = minimum(norm, (Basis.a1,Basis.a2))
+minimumLatticeConst(Basis::Basis_Struct_3D) = minimum(norm, (Basis.a1,Basis.a2,Basis.a3))
 
 """given a radius R, returns all lattice sites within a sphere of radius R"""
 function generateSphere(R,Basis::Basis_Struct,refSite = Basis.refSites[1])
-    a = maximumLatticeConst(Basis)
+    a = minimumLatticeConst(Basis)
     PL = generateLUnitCells(ceil(Int,R/a),Basis,refSite)
     return filter!(x->dist(refSite,x,Basis) <= R,PL)
 end
