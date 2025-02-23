@@ -168,7 +168,7 @@ function pairNumbersDict(siteList::AbstractVector{R}, PairList::AbstractVector{R
 
     pairNumberVec = Vector{Pair{Tuple{R,R},Int}}(undef, length(pairs))
 
-    for i in eachindex(pairNumberVec, pairs)
+    Threads.@threads for i in eachindex(pairNumberVec, pairs)
         R1, R2 = pairs[i]
         pairNumberVec[i] = (R1, R2) => pairNumber(R1, R2, MapToPairDict, nonRefSyms, refSyms, Basis)
     end
@@ -220,7 +220,7 @@ function CalcSiteSum(PairList::AbstractVector{<:Rv}, PairTypes, siteList::Abstra
 
     pairs = fill(sumElements(0, 0, 0, 0), Nsum, Npairs) # generate empty matrix
 
-    for j in eachindex(PairList) #lhs of flow eqs
+    Threads.@threads for j in eachindex(PairList) #lhs of flow eqs
         Rj = PairList[j]
         Ri = Basis.refSites[PairTypes[j].xi]  # current reference site
         for (k, Rk) in enumerate(siteList)
@@ -246,15 +246,13 @@ function reduceSiteSum(siteSum)
 
     Nsum, Npairs = size(siteSum)
     reducedSum = fill(sumElements(0, 0, 0, 0), Nsum + 1, Npairs) #add +1 to Nsum to always have a (0,0,0,0) sumElements so we can always cut off last index!
-    MaxNsum = 1
-    for j in 1:Npairs
+
+    lens = zeros(Int,Npairs)
+    Threads.@threads for j in 1:Npairs
         jSumList = sort(@view siteSum[:, j])
         uniqueElements = unique(jSumList, dims=1)
-        len = length(uniqueElements)
-        if len > MaxNsum
-            # determine dimension of new matrix
-            MaxNsum = len
-        end
+        lens[j] = length(uniqueElements)
+        
         for (k, pair) in enumerate(uniqueElements)
             if pair.ki != 0 && pair.kj != 0
                 m = multiplicity_sorted(pair, jSumList)
@@ -262,6 +260,9 @@ function reduceSiteSum(siteSum)
             end
         end
     end
+
+    MaxNsum = maximum(lens)
+    
     return reducedSum[1:MaxNsum-1, :] #cut off unneded part, MaxNsum-1 because every part will definitely contain an empty split 
 end
 
